@@ -29,9 +29,20 @@ public sealed class Evaporator(Ledger ledger, MareaSettings settings, HuggingFac
         {
             return Keep(f, "ev.unexpected_state", state);
         }
+        if (SyncRoot.NotReadyKey(f.Root) is { } notReady)
+        {
+            return Keep(f, notReady);
+        }
         if (!SyncRoot.IsMareaRoot(f.Root))
         {
-            SyncRoot.Register(f.Root, Version);
+            try
+            {
+                SyncRoot.Register(f.Root, Version);
+            }
+            catch (CloudFilesException e)
+            {
+                return Keep(f, "ev.platform_refused", e.Message);
+            }
         }
         SafeFileHandle h;
         try
@@ -58,13 +69,25 @@ public sealed class Evaporator(Ledger ledger, MareaSettings settings, HuggingFac
                 return Changed(f);
             }
             var identity = ContentHash.ToIdentity(f.Sha256);
-            if (state == PlaceholderState.NormalFile)
+            try
             {
-                Placeholder.ConvertAndDehydrate(h, identity);
+                if (state == PlaceholderState.NormalFile)
+                {
+                    Placeholder.ConvertAndDehydrate(h, identity);
+                }
+                else
+                {
+                    Placeholder.Dehydrate(h);
+                }
             }
-            else
+            catch (IOException)
             {
-                Placeholder.Dehydrate(h);
+                // Linux: another program has the file open or mapped (Windows refuses at the open above).
+                return Keep(f, "ev.in_use");
+            }
+            catch (CloudFilesException e)
+            {
+                return Keep(f, "ev.platform_refused", e.Message);
             }
         }
         f.Residency = Residency.Evaporated;

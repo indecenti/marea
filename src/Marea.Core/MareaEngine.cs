@@ -57,7 +57,7 @@ public sealed partial class MareaEngine : IDisposable
         {
             return why;
         }
-        Settings.ManagedRoots.Add(Path.GetFullPath(path).TrimEnd('\\'));
+        Settings.ManagedRoots.Add(Path.GetFullPath(path).TrimEnd(Path.DirectorySeparatorChar));
         SaveSettings();
         Ledger.Log("j.root_added", path, 0, true);
         return null;
@@ -316,7 +316,7 @@ public sealed partial class MareaEngine : IDisposable
     /// <summary>Null when the volume can take <paramref name="bytes"/> more (keeping 1 GiB spare), else why not.</summary>
     private static string? SpaceProblem(IEnumerable<FileRecord> coming)
     {
-        foreach (var byVolume in coming.GroupBy(f => Path.GetPathRoot(f.Path)!, StringComparer.OrdinalIgnoreCase))
+        foreach (var byVolume in coming.GroupBy(f => FileSystemFacts.VolumeRoot(f.Path), StringComparer.OrdinalIgnoreCase))
         {
             var need = byVolume.Sum(f => f.Size);
             var free = FileSystemFacts.FreeBytes(byVolume.Key);
@@ -335,7 +335,7 @@ public sealed partial class MareaEngine : IDisposable
     /// <summary>Space status of every volume with managed folders.</summary>
     public List<VolumeStatus> Volumes() => Settings.ManagedRoots
         .Where(Directory.Exists)
-        .Select(r => Path.GetPathRoot(Path.GetFullPath(r))!)
+        .Select(FileSystemFacts.VolumeRoot)
         .Distinct(StringComparer.OrdinalIgnoreCase)
         .Select(v => new VolumeStatus(v, FileSystemFacts.FreeBytes(v), FileSystemFacts.TotalBytes(v),
             (long)(Settings.FreeSpaceTargetGb * (1L << 30))))
@@ -347,7 +347,7 @@ public sealed partial class MareaEngine : IDisposable
         long freed = 0;
         foreach (var v in Volumes().Where(v => v.Deficit > 0))
         {
-            var plan = Plan(v.Deficit).Where(p => string.Equals(Path.GetPathRoot(p.File.Path), v.Volume, StringComparison.OrdinalIgnoreCase));
+            var plan = Plan(v.Deficit).Where(p => string.Equals(FileSystemFacts.VolumeRoot(p.File.Path), v.Volume, StringComparison.OrdinalIgnoreCase));
             var files = plan.Select(p => p.File).ToList();
             var (done, _) = await EvaporateAsync(files, progress, ct);
             freed += files.Take(done).Sum(f => f.Size);

@@ -73,5 +73,6 @@ public sealed class ReaderGuard(MareaSettings settings, Func<DateTime>? clock = 
     /// <summary>Marea's own reads (bring back, undo, restore) never count.</summary>
     private static bool IsMarea(string process) =>
         DisplayName(process) is var n && (n.Equals("Marea.exe", StringComparison.OrdinalIgnoreCase)
-                                          || n.Equals("mareactl.exe", StringComparison.OrdinalIgnoreCase));
+                                          || n.Equals("mareactl.exe", StringComparison.OrdinalIgnoreCase)
+                                          || n.Equals("mareactl", StringComparison.Ordinal));
 }

@@ -46,6 +46,20 @@ jobs:
       - name: Self-test
         run: bash build/check-selftest.sh "out/marea-check"
 
+  linux:
+    # Marea on Linux: build mareactl, then free and refill real files through the fanotify agent and
+    # the systemd service on the runner (needs root, which hosted runners have through sudo).
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+        with:
+          dotnet-version: 10.0.x
+      - name: Publish mareactl for Linux
+        run: dotnet publish src/Marea.Cli -f net10.0 -c Release -r linux-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o out
+      - name: End-to-end test (free, refill, in-use, wrong bytes, agent down, service)
+        run: sudo bash build/linux-selftest.sh out/mareactl "$USER"
+
   package:
     needs: build-and-test
     runs-on: windows-latest

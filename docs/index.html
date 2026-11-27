@@ -30,8 +30,8 @@
       "@type": "SoftwareApplication",
       "name": "Marea",
       "applicationCategory": "UtilitiesApplication",
-      "operatingSystem": "Windows 10, Windows 11 (model safety check also on macOS and Linux)",
-      "softwareVersion": "0.7.0",
+      "operatingSystem": "Windows 10, Windows 11, Linux (model safety check also on macOS)",
+      "softwareVersion": "0.8.0",
       "license": "https://opensource.org/licenses/MIT",
       "isAccessibleForFree": true,
       "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" },
@@ -88,7 +88,7 @@
         {
           "@type": "Question",
           "name": "Is Marea free? Does it work on macOS or Linux?",
-          "acceptedAnswer": { "@type": "Answer", "text": "Marea is free and open source under the MIT license. It runs on Windows 10 (1809 or later) and Windows 11. The engine is portable .NET; macOS and Linux backends are on the roadmap." }
+          "acceptedAnswer": { "@type": "Answer", "text": "Marea is free and open source under the MIT license. It runs on Windows 10 (1809 or later) and Windows 11, and on Linux (x64, ARM64) through mareactl and a systemd agent. On macOS the model safety check runs today; freeing space there is on the roadmap." }
         }
       ]
     }
@@ -205,6 +205,7 @@ footer { padding: 32px 0 48px; color: var(--muted); font-size: .9rem; text-align
 mareactl watch --json                              # exit 3 = models at risk
 $env:MAREA_READONLY = "1"; mareactl models --json  # inventory, no changes possible</code></pre>
     <p>Versioned JSON schemas, documented exit codes, read-only mode, untrusted names sanitised. See <a href="https://github.com/indecenti/marea/blob/main/docs/AGENTS.md">AGENTS.md</a>.</p>
+    <p><strong>On Linux:</strong> <code>mareactl</code> frees space too. Install the agent once with <code>sudo mareactl service install</code>; freed files come back, verified, when a program opens them, and files a running model server has open are never touched.</p>
     <p><strong>On macOS and Linux:</strong> the safety check is also a standalone binary, <code>marea-check</code>, for Linux (x64, ARM) and macOS (Apple Silicon, Intel). Download it from <a href="https://github.com/indecenti/marea/releases">Releases</a>; same verdicts, JSON and exit codes.</p>
   </section>
 
@@ -216,7 +217,7 @@ $env:MAREA_READONLY = "1"; mareactl models --json  # inventory, no changes possi
     <details><summary>Can I lose a file?</summary><p>No by design: only files with a verified source that survives the operation are evaporated, every byte that comes back is re-hashed, and unique files are never touched. Read the <a href="https://github.com/indecenti/marea/blob/main/SECURITY.md">security model</a>.</p></details>
     <details><summary>What does Marea send over the network?</summary><p>No telemetry and never your paths or file contents. Only public repository names, public digests and an update check, each of which can be turned off. Details in the <a href="https://github.com/indecenti/marea/blob/main/CODE_SIGNING_POLICY.md#privacy-policy">privacy policy</a>.</p></details>
     <details><summary>Why did Ollama 0.40 double the size of my models, and how do I get the space back?</summary><p>Ollama 0.40 converted some GGUF models on your PC and kept the original next to the converted copy, only so you could go back to an older Ollama; you may also see hidden llamacpp:&lt;digest&gt; entries. Marea finds these rollback copies and frees them without deleting them: if you ever downgrade, the original returns from the Ollama registry, verified by digest. Use the Models page or <code>mareactl free --rollback --yes</code>.</p></details>
-    <details><summary>Does it work on macOS or Linux?</summary><p>The model safety check does: download <code>marea-check</code> for macOS or Linux. Freeing space does not yet: it uses the Windows Cloud Files API. The engine is portable .NET, and macOS (File Provider) and Linux (FUSE) backends are on the roadmap. Contributions welcome.</p></details>
+    <details><summary>Does it work on macOS or Linux?</summary><p>Linux: yes, since 0.8. Download <code>mareactl</code> for Linux, run <code>sudo mareactl service install</code> once, then <code>add</code>, <code>scan</code> and <code>free</code> as on Windows. A fanotify agent brings freed files back, verified, when a program opens them. macOS: the model safety check (<code>marea-check</code>) runs there; freeing space needs a signed File Provider extension and is on the roadmap.</p></details>
   </section>
 </main>
 

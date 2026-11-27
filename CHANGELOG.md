@@ -6,6 +6,26 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-11-27
+
+### Added
+- **Linux.** `mareactl` frees space on Linux (x64 and ARM64, one self-contained binary per
+  architecture in Releases). A freed file keeps its name, size and write time; its blocks are
+  released and it carries its sha256 in an extended attribute. The agent, installed once with
+  `sudo mareactl service install` as the systemd service `marea-agent@<user>`, watches only freed
+  files with fanotify: when a program opens one, the open waits while the agent refills it from its
+  source and checks the sha256, and only then goes through. Every command works as on Windows.
+- Linux safety rules: a file another program has open or memory-mapped is never freed (kernel write
+  lease); nothing is freed while the agent is down; wrong bytes from a source are refused and the
+  next source is tried, and if none delivers, the open fails and the file stays freed; the first
+  block is written last, and a freed file read without the agent starts with a plain-text notice.
+- `build/linux-selftest.sh`: end-to-end test on a real kernel (free, refill, concurrent readers,
+  mapped files, corrupted source, agent stopped, the systemd service). CI runs it on every change.
+
+### Changed
+- The engine builds for Windows and Linux. Windows behaviour is unchanged, except that a folder
+  Windows refuses to register now keeps its files with the reason instead of stopping the cleanup.
+
 ## [0.7.0] - 2026-11-27
 
 ### Added

@@ -5,8 +5,18 @@
     <!-- Native SQLite pinned past GHSA-2m69-gcr7-jv3q (2.1.11 is vulnerable). -->
     <PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" Version="3.53.3" />
   </ItemGroup>
-  <ItemGroup>
+  <PropertyGroup>
+    <!-- Windows: Cloud Files. Linux (net10.0): fanotify agent in Platform/Linux, same API names. -->
+    <TargetFramework></TargetFramework>
+    <TargetFrameworks>net10.0-windows10.0.19041.0;net10.0</TargetFrameworks>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net10.0'">
+    <SupportedOSPlatformVersion></SupportedOSPlatformVersion>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(TargetFramework)' != 'net10.0'">
     <ProjectReference Include="..\Marea.CloudFiles\Marea.CloudFiles.csproj" />
+    <Compile Remove="Platform\Linux\**" />
   </ItemGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="Marea.Tests" />

@@ -3,7 +3,17 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <AssemblyName>mareactl</AssemblyName>
+    <TargetFramework></TargetFramework>
+    <TargetFrameworks>net10.0-windows10.0.19041.0;net10.0</TargetFrameworks>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net10.0'">
+    <!-- Linux build: no ICU needed (languages come from LANG/LANGUAGE). -->
+    <SupportedOSPlatformVersion></SupportedOSPlatformVersion>
+    <InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(TargetFramework)' != 'net10.0'">
+    <Compile Remove="LinuxService.cs" />
+  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Marea.Core\Marea.Core.csproj" />
   </ItemGroup>

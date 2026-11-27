@@ -1,6 +1,6 @@
 # Marea — User manual
 
-Version 0.7 · Windows 10 1809+ / Windows 11 · English
+Version 0.8 · Windows 10 1809+ / Windows 11 · Linux (command line) · English
 ([Italiano](i18n/README.it.md) · [Español](i18n/README.es.md) · [Français](i18n/README.fr.md) · [Deutsch](i18n/README.de.md))
 
 1. [What Marea does](#1-what-marea-does)
@@ -358,14 +358,32 @@ mareactl replicate                                copy unique files to the mirro
 mareactl restore-all --yes                        emergency exit
 mareactl journal [n] [--json]                     recent activity
 mareactl agent                                    serve evaporated files without the app
+mareactl service install|uninstall                Linux: install the agent as a service (sudo)
 ```
 
 Every command that changes something shows the plan first and does nothing without `--yes`
 (exit code 2). `--json` prints a versioned JSON document for scripts and AI agents, and
 `MAREA_READONLY=1` refuses every change (exit code 5). The full contract, with exit codes and
 JSON schemas, is in [AGENTS.md](AGENTS.md).
-Environment variables: `MAREA_DATA` (data folder, default `%LOCALAPPDATA%\Marea`) and
-`MAREA_LANG` (`en`, `it`, `es`, `fr`, `de`).
+Environment variables: `MAREA_DATA` (data folder, default `%LOCALAPPDATA%\Marea`, on Linux
+`~/.local/share/Marea`) and `MAREA_LANG` (`en`, `it`, `es`, `fr`, `de`).
+
+### On Linux
+
+Download `mareactl-<version>-linux-x64.tar.gz` (or `linux-arm64`) from Releases, unpack it, then
+install the agent once: `sudo ./mareactl service install`. It runs as a systemd service for your
+user (`marea-agent@<user>`), starts at boot, and is what brings freed files back when a program
+opens them. From then on the commands are the same as on Windows: `add`, `scan`, `free`, `undo`,
+`restore`, `models`, `watch`.
+
+- Freeing refuses every file while the agent is not running: a freed file could not come back.
+- A file another program has open or memory-mapped (a running model server) is kept.
+- A program that opens a freed file waits while it comes back, then reads the verified bytes. If
+  no source delivers the right bytes, the open fails with *Operation not permitted* and the file
+  stays freed: nothing half-written is ever handed to a program.
+- Freed files keep their size; `du` shows the space they no longer use.
+- To remove Marea: `mareactl restore-all --yes`, then `sudo mareactl service uninstall --yes`.
+- Agent messages: `journalctl -u marea-agent@$USER`.
 
 ## 16. Uninstall
 

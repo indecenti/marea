@@ -64,6 +64,10 @@ pickle de Python. Marea lit ses instructions **sans les exécuter** et donne un 
 TorchScript, modèles de chat GGUF qui tentent de sortir de leur sandbox) ou *Dangereux*. Pour
 vérifier un modèle tout juste téléchargé : `mareactl check <fichier ou dossier>`.
 
+## Nouveautés de la 0.8
+
+Marea libère aussi de l'espace sous **Linux** (x64 et ARM64), avec `mareactl`. On installe le service une fois avec `sudo mareactl service install` ; ensuite `add`, `scan` et `free` fonctionnent comme sous Windows. Un fichier libéré reste à sa place avec la même taille et revient, vérifié, dès qu'un programme l'ouvre. Les fichiers ouverts par un serveur de modèles en marche ne sont jamais touchés.
+
 ## Nouveautés de la 0.7
 
 Ollama 0.40 a converti certains modèles GGUF et a aussi gardé l'original, seulement pour revenir à une version antérieure : ces modèles prennent deux fois plus de place. Marea trouve maintenant ces **copies de retour arrière** et les libère sans les supprimer : si un jour vous revenez à un Ollama plus ancien, l'original revient seul depuis le registre d'Ollama.

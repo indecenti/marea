@@ -18,6 +18,7 @@
   <a href="https://github.com/indecenti/marea/releases"><img src="https://img.shields.io/github/v/release/indecenti/marea?include_prereleases&color=1f8c8a" alt="Release"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-2fa39b" alt="MIT license"></a>
   <img src="https://img.shields.io/badge/Windows-10%201809%2B%20%7C%2011-0e4c5c" alt="Windows 10 1809+ | 11">
+  <img src="https://img.shields.io/badge/Linux-x64%20%7C%20arm64-0e4c5c" alt="Linux x64 | arm64">
 </p>
 
 ---
@@ -61,9 +62,10 @@ Marea is for you if you have searched for any of these:
 | **fp32 and fp16/bf16 copies of the same model** | Recomputes bf16 from fp32 bit for bit when needed, so only one copy uses space |
 | **"Is this .ckpt / .pt / .bin safe to load?"**, pickle malware, unsafe models | Reads the pickle opcodes and GGUF chat templates without loading anything and gives a calm verdict |
 | **A model disappeared from Hugging Face or Civitai** | Watches public sources daily and keeps or brings back the files that are about to vanish |
+| **A Linux GPU server full of models** | `mareactl` and a systemd agent free them; they come back, verified, when a program opens them |
 | **A disk-cleanup tool an AI agent can use safely** | `mareactl`: versioned JSON, exit codes, read-only mode, nothing changes without `--yes` |
 
-Free and open source (MIT) for Windows 10 and 11. Website: <https://indecenti.github.io/marea/>
+Free and open source (MIT) for Windows 10 and 11, and for Linux through `mareactl`. Website: <https://indecenti.github.io/marea/>
 
 > 📖 **New here?** Read the [user manual](docs/MANUAL.md). **Testing it for us?** Follow the
 > [tester guide](docs/TESTING.md): 15 minutes, safe, every step undoable.
@@ -196,6 +198,35 @@ pipelines, download scripts and AI agents. Builds are attested like the app
 (`gh attestation verify <file> --repo indecenti/marea`). On macOS, if the file was downloaded with a
 browser, clear the quarantine flag once: `xattr -d com.apple.quarantine marea-check`.
 
+### On Linux: free space with `mareactl`
+
+Since 0.8, `mareactl` frees space on Linux the same way as on Windows: a file keeps its name and
+size, its data leaves the disk, and it comes back, verified, the moment a program opens it. Made
+for GPU servers and workstations full of Hugging Face, Ollama and llama.cpp models.
+
+```bash
+tar -xzf mareactl-0.8.0-linux-x64.tar.gz
+sudo ./mareactl service install        # the agent, as a systemd service for your user
+mareactl add ~/.cache/huggingface/hub
+mareactl scan
+mareactl free --gb 50 --yes            # undo: mareactl undo
+```
+
+How it works: a freed file becomes a sparse file of the same size, marked with an extended
+attribute. The agent (`marea-agent@<user>`) watches only those files with fanotify. When a program
+opens one, the open waits while the agent refills the file from its source and checks the sha256;
+only then does the program get it. Wrong or missing bytes: the program gets *Operation not
+permitted* and the file stays freed. A file another program has open or memory-mapped (a running
+llama.cpp or vLLM server) is never freed. If the agent is stopped, a freed file starts with a
+plain-text notice instead of model data, so no loader can mistake it for a model, and Marea
+refuses to free anything until the agent runs again.
+
+**Requirements:** x64 or ARM64, systemd, a file system with extended attributes and hole punching
+(ext4, XFS, Btrfs), model files owned by your user. The service runs as your user with
+`CAP_SYS_ADMIN` (needed by fanotify) plus `CAP_DAC_OVERRIDE`, `CAP_FOWNER` and `CAP_LEASE`; the
+installer copies the binary to `/usr/local/bin`, owned by root, so the service never runs a file
+your account could replace. There is no desktop app on Linux: the CLI and the agent do everything.
+
 ## Built for AI agents
 
 More and more disk housekeeping will be done by AI assistants through the command line. `mareactl`
@@ -308,7 +339,8 @@ On a real workstation (ACE-Step and Side-Step checkpoints, Windows 11, NVMe):
 A per-user MSI installer (no admin) is ready in [`installer/`](installer) and will ship
 with the first signed release.
 
-**Requirements:** Windows 10 1809+ or Windows 11, x64, NTFS.
+**Requirements:** Windows 10 1809+ or Windows 11, x64, NTFS. For Linux see
+[On Linux](#on-linux-free-space-with-mareactl).
 
 ## Quick start
 
@@ -435,10 +467,10 @@ digest. The converted copy Ollama uses today stays on disk, because no registry 
 Package caches are better cleaned by their own tools.
 
 **macOS / Linux?**
-The safety check runs there today: download `marea-check` for macOS or Linux from Releases.
-Freeing space needs a placeholder layer per OS: macOS has File Provider, Linux has fanotify
-pre-content events or FUSE ([#10](https://github.com/indecenti/marea/issues/10),
-[#11](https://github.com/indecenti/marea/issues/11)). Contributions welcome.
+Linux: yes, since 0.8, with `mareactl` and a systemd agent (see
+[On Linux](#on-linux-free-space-with-mareactl)). macOS: the safety check runs there today
+(`marea-check` from Releases); freeing space needs a File Provider extension, which Apple only
+runs signed and notarized ([#10](https://github.com/indecenti/marea/issues/10)). Contributions welcome.
 
 **How do I uninstall?**
 Use the uninstaller (MSI), or *Settings → Bring everything back and detach* and then delete
@@ -458,13 +490,14 @@ the folder (portable). Either way every file comes back first.
 - [x] Share card, unused-models filter, mass-read protection with per-program blocking
 - [x] `marea-check` for macOS and Linux; LM Studio, Jan and GPT4All folders; Hugging Face scan results
 - [x] Ollama rollback copies: give the space back without losing the rollback
+- [x] Linux: `mareactl` frees space through a fanotify agent (systemd service)
 - [ ] Cross-app sharing: one copy for ComfyUI, Forge, LM Studio and Ollama, without symlinks
 - [ ] Signed releases, MSI installer, winget
 - [ ] Civitai source (by hash)
 - [ ] Predictive high tide: bring models back *before* you need them
 - [ ] Tensor-level store: share layers across fine-tunes and merges
 - [ ] File Explorer navigation-pane entry
-- [ ] macOS and Linux backends
+- [ ] macOS backend (File Provider)
 
 ## Documentation
 
@@ -494,7 +527,7 @@ Requires the .NET 10 SDK. The architecture is described in
 
 ## Contributing
 
-Issues and pull requests are welcome: new sources, translations, macOS/Linux backends. Please
+Issues and pull requests are welcome: new sources, translations, a macOS backend. Please
 read [CONTRIBUTING.md](CONTRIBUTING.md) first; the bar is *never lose a byte*. Report security
 issues privately (see [SECURITY.md](SECURITY.md)).
 

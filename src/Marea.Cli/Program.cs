@@ -9,7 +9,7 @@ var cmd = args.Length > 0 ? args[0].ToLowerInvariant() : "help";
 var json = args.Contains("--json");
 var positional = args.Skip(1).Where(a => !a.StartsWith("--", StringComparison.Ordinal)).ToList();
 var readOnly = Environment.GetEnvironmentVariable("MAREA_READONLY") is "1" or "true";
-string[] changing = ["add", "remove", "evaporate", "free", "undo", "restore", "restore-all", "replicate", "agent"];
+string[] changing = ["add", "remove", "evaporate", "free", "undo", "restore", "restore-all", "replicate", "agent", "service"];
 
 if (cmd == "check")
 {
@@ -166,6 +166,13 @@ async Task<int> Dispatch()
             return Exit.Ok;
         case "agent":
             return await Serve();
+        case "service":
+#if WINDOWS
+            Console.WriteLine(Loc.T("cli.help"));
+            return Exit.Usage;
+#else
+            return LinuxService.Run(positional.FirstOrDefault(), args);
+#endif
         case "help" or "--help" or "-h":
             Console.WriteLine(Loc.T("cli.help"));
             return Exit.Ok;
@@ -238,6 +245,16 @@ async Task<int> Watch()
 
 async Task<int> Serve()
 {
+#if !WINDOWS
+    // Linux: the fanotify group must exist before the folders connect, so they arm their freed files.
+    if (Marea.CloudFiles.FanotifyServer.Start(req => engine.Hydration.HandleAsync(req, "/")) is { } cannot)
+    {
+        Console.Error.WriteLine(cannot);
+        return Exit.Error;
+    }
+    using var sigterm = System.Runtime.InteropServices.PosixSignalRegistration.Create(
+        System.Runtime.InteropServices.PosixSignal.SIGTERM, ctx => { ctx.Cancel = true; Marea.CloudFiles.FanotifyServer.Current?.Dispose(); Environment.Exit(0); });
+#endif
     if (!engine.StartProvider())
     {
         Console.WriteLine(Loc.T("cli.already_serving"));
@@ -267,6 +284,9 @@ async Task<int> Serve()
         }
         await Task.WhenAny(stop.Task, Task.Delay(TimeSpan.FromMinutes(10)));
     }
+#if !WINDOWS
+    Marea.CloudFiles.FanotifyServer.Current?.Dispose();
+#endif
     return Exit.Ok;
 }
 
@@ -274,6 +294,11 @@ async Task<int> Serve()
 // Ask it to quit (same user session) and wait for the role to free up.
 async Task<bool> TakeProviderRoleAsync()
 {
+    if (!OperatingSystem.IsWindows())
+    {
+        // Linux: the agent keeps serving while files come back; nothing has to be detached from it.
+        return true;
+    }
     if (engine.StartProvider())
     {
         return true;
@@ -296,6 +321,10 @@ async Task<bool> TakeProviderRoleAsync()
 
 static void RemoveStartupEntry()
 {
+    if (!OperatingSystem.IsWindows())
+    {
+        return;
+    }
     using var k = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Run", writable: true);
     if (k?.GetValue("Marea") is not null)
     {

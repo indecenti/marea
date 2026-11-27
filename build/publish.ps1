@@ -1,4 +1,4 @@
-# Publishes Marea for Windows x64: self-contained app + mareactl (no .NET install needed),
+﻿# Publishes Marea for Windows x64: self-contained app + mareactl (no .NET install needed),
 # then creates the portable ZIP and SHA-256 checksums of the files to distribute.
 # Usage: powershell -File build\publish.ps1 [-Version 0.1.0] [-NoPackage | -PackageOnly]
 # The release workflow runs it twice: -NoPackage, then code signing, then -PackageOnly.
@@ -16,7 +16,8 @@ if (-not $PackageOnly) {
         "-p:DebugType=none", "-p:Version=$Version", "-p:SatelliteResourceLanguages=en%3Bit%3Bes%3Bfr%3Bde", "-o", $out)
     dotnet publish (Join-Path $root "src\Marea.App\Marea.App.csproj") @common
     if ($LASTEXITCODE -ne 0) { throw "app publish failed" }
-    dotnet publish (Join-Path $root "src\Marea.Cli\Marea.Cli.csproj") @common
+    # mareactl also builds for Linux (net10.0): publish the Windows target here.
+    dotnet publish (Join-Path $root "src\Marea.Cli\Marea.Cli.csproj") -f net10.0-windows10.0.19041.0 @common
     if ($LASTEXITCODE -ne 0) { throw "mareactl publish failed" }
 
     Copy-Item (Join-Path $root "README.md"), (Join-Path $root "SECURITY.md"), (Join-Path $root "LICENSE"), (Join-Path $root "THIRD-PARTY-NOTICES.md") $out

@@ -27,6 +27,7 @@ doing anything a person did not approve.
 | Same, and rescue what is at risk | `mareactl watch --json` | Brings files back, copies to the mirror |
 | Free space (undoable) | `mareactl free --gb N --instant --yes` | **Yes**, needs `--yes` |
 | Undo the last cleanup | `mareactl undo` | **Yes** |
+| Linux: install the agent that brings freed files back (once, as root) | `sudo mareactl service install` | **Yes** (systemd service) |
 
 ## Recommended workflows
 
@@ -139,3 +140,5 @@ Journal: `entries` with `at`, `action` (stable code), `text` (translated), `path
 - `check` reads at most 256 MB of pickle data per archive entry; larger entries are reported as
   `suspicious` (not fully read).
 - Models must be in a managed folder for `models`; `check` works on any path.
+- On Linux, `free` and `evaporate` keep every file (reason: the agent is not running) until
+  `marea-agent@<user>` runs. Read-only commands work without it.

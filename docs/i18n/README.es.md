@@ -64,6 +64,10 @@ lee sus instrucciones **sin ejecutarlas** y da un veredicto sereno: *Formato seg
 intentan salir de su sandbox) o *Peligroso*. Para revisar un modelo recién descargado:
 `mareactl check <archivo o carpeta>`.
 
+## Novedades de la 0.8
+
+Marea libera espacio también en **Linux** (x64 y ARM64), con `mareactl`. Se instala el servicio una vez con `sudo mareactl service install`; después `add`, `scan` y `free` funcionan como en Windows. Un archivo liberado sigue en su sitio con el mismo tamaño y vuelve, verificado, en cuanto un programa lo abre. Los archivos que tiene abiertos un servidor de modelos en marcha nunca se tocan.
+
 ## Novedades de la 0.7
 
 Ollama 0.40 convirtió algunos modelos GGUF y guardó también el original, solo para poder volver a una versión anterior: esos modelos ocupan el doble. Marea ahora encuentra estas **copias de reversión** y las libera sin borrarlas: si algún día vuelves a un Ollama más antiguo, el original regresa solo desde el registro de Ollama.

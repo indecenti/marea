@@ -48,10 +48,11 @@ public static class Loc
         return "en";
     }
 
-    /// <summary>Windows' ordered list of preferred languages, then the display language.</summary>
+    /// <summary>The system's ordered list of preferred languages, then the display language.</summary>
     private static IEnumerable<string> PreferredLanguages()
     {
         IReadOnlyList<string> list = [];
+#if WINDOWS
         try
         {
             list = Windows.System.UserProfile.GlobalizationPreferences.Languages;
@@ -60,6 +61,11 @@ public static class Loc
         {
             // Not available (e.g. very old Windows): the display language below is enough.
         }
+#else
+        // Linux: LANGUAGE is an ordered list ("it:en"), then the locale variables in POSIX precedence.
+        list = [.. (Environment.GetEnvironmentVariable("LANGUAGE") ?? "").Split(':', StringSplitOptions.RemoveEmptyEntries),
+            .. new[] { "LC_ALL", "LC_MESSAGES", "LANG" }.Select(Environment.GetEnvironmentVariable).OfType<string>()];
+#endif
         return list.Append(CultureInfo.CurrentUICulture.Name);
     }
 

@@ -8,11 +8,58 @@ public static class FileSystemFacts
 {
     /// <summary>Number of hard links pointing at the file (1 for an ordinary file).</summary>
     public static int HardLinkCount(SafeFileHandle h) =>
+#if WINDOWS
         GetFileInformationByHandle(h, out var info) ? (int)info.NumberOfLinks : 1;
+#else
+        (int)CloudFiles.LinuxNative.Stat((int)h.DangerousGetHandle()).Links;
+#endif
 
     /// <summary>Why a folder cannot be managed, or null when it can.</summary>
     public static string? RejectRoot(string path, IEnumerable<string> existingRoots)
     {
+#if !WINDOWS
+        return RejectLinuxRoot(path, existingRoots);
+    }
+
+    /// <summary>Linux rules: an existing folder, not a system tree, not a broad folder itself, not
+    /// overlapping a managed one, on a file system that can hold freed files.</summary>
+    private static string? RejectLinuxRoot(string path, IEnumerable<string> existingRoots)
+    {
+        var full = Path.GetFullPath(path).TrimEnd('/');
+        if (!Directory.Exists(full))
+        {
+            return Loc.T("root.missing");
+        }
+        if (full.Length == 0)
+        {
+            return Loc.T("root.whole_drive");
+        }
+        string[] systemTrees = ["/bin", "/boot", "/dev", "/etc", "/lib", "/lib32", "/lib64", "/proc", "/run", "/sbin", "/sys", "/usr", "/var"];
+        string[] broadFolders =
+        [
+            Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "/home", "/mnt", "/media", "/opt", "/srv", "/tmp", "/root",
+        ];
+        if (systemTrees.Any(t => full == t || IsUnder(full, t)) || broadFolders.Any(b => b.Length > 0 && full == b.TrimEnd('/')))
+        {
+            return Loc.T("root.system");
+        }
+        foreach (var r in existingRoots)
+        {
+            var rr = Path.GetFullPath(r).TrimEnd('/');
+            if (rr == full)
+            {
+                return Loc.T("root.already");
+            }
+            if (IsUnder(full, rr) || IsUnder(rr, full))
+            {
+                return Loc.T("root.overlap", rr);
+            }
+        }
+        return CloudFiles.SyncRoot.Probe(full);
+#else
         var full = Path.GetFullPath(path).TrimEnd('\\');
         if (!Directory.Exists(full))
         {
@@ -70,17 +117,33 @@ public static class FileSystemFacts
             }
         }
         return null;
+#endif
     }
 
     /// <summary>True when <paramref name="child"/> is strictly inside <paramref name="parent"/>.</summary>
     public static bool IsUnder(string child, string parent) =>
-        child.StartsWith(parent.TrimEnd('\\') + "\\", StringComparison.OrdinalIgnoreCase);
+        child.StartsWith(parent.TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar,
+            OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
 
     /// <summary>Free bytes on the volume holding <paramref name="path"/>.</summary>
-    public static long FreeBytes(string path) => new DriveInfo(Path.GetPathRoot(Path.GetFullPath(path))!).AvailableFreeSpace;
+    public static long FreeBytes(string path) => new DriveInfo(VolumeRoot(path)).AvailableFreeSpace;
 
     /// <summary>Total bytes of the volume holding <paramref name="path"/>.</summary>
-    public static long TotalBytes(string path) => new DriveInfo(Path.GetPathRoot(Path.GetFullPath(path))!).TotalSize;
+    public static long TotalBytes(string path) => new DriveInfo(VolumeRoot(path)).TotalSize;
+
+    /// <summary>Root of the volume holding <paramref name="path"/>: the drive on Windows ("C:\"), the mount
+    /// point on Linux (models often live on a separate disk mounted under /mnt or /data).</summary>
+    public static string VolumeRoot(string path)
+    {
+        var full = Path.GetFullPath(path);
+        if (OperatingSystem.IsWindows())
+        {
+            return Path.GetPathRoot(full)!;
+        }
+        return DriveInfo.GetDrives().Select(d => d.RootDirectory.FullName)
+            .Where(m => m == "/" || full == m.TrimEnd('/') || IsUnder(full, m))
+            .MaxBy(m => m.Length) ?? "/";
+    }
 
     [StructLayout(LayoutKind.Sequential)]
     private struct ByHandleFileInformation

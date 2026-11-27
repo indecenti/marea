@@ -264,6 +264,18 @@ T = {
 "root.whole_drive": ("Non si può gestire un intero disco: scegli una cartella.", "A whole drive cannot be managed: choose a folder.", "No se puede gestionar un disco entero: elige una carpeta.", "Un disque entier ne peut pas être géré : choisissez un dossier.", "Ein ganzes Laufwerk kann nicht verwaltet werden: wähle einen Ordner."),
 "root.system": ("Cartella di sistema o troppo ampia: scegli una sottocartella precisa (per esempio checkpoints).", "System or too broad a folder: choose a specific subfolder (e.g. checkpoints).", "Carpeta del sistema o demasiado amplia: elige una subcarpeta concreta (p. ej. checkpoints).", "Dossier système ou trop large : choisissez un sous-dossier précis (p. ex. checkpoints).", "Systemordner oder zu allgemein: wähle einen bestimmten Unterordner (z. B. checkpoints)."),
 "root.foreign": ("La cartella è già gestita da un altro servizio (per esempio OneDrive).", "The folder is already managed by another service (e.g. OneDrive).", "La carpeta ya la gestiona otro servicio (p. ej. OneDrive).", "Le dossier est déjà géré par un autre service (p. ex. OneDrive).", "Der Ordner wird bereits von einem anderen Dienst verwaltet (z. B. OneDrive)."),
+"linux.agent_needed": ("l'agente di Marea non è attivo, quindi il file non potrebbe tornare: avvialo con  sudo mareactl service install", "the Marea agent is not running, so the file could not come back: start it with  sudo mareactl service install", "el agente de Marea no está activo, así que el archivo no podría volver: inícialo con  sudo mareactl service install", "l'agent Marea ne tourne pas, le fichier ne pourrait donc pas revenir : lancez-le avec  sudo mareactl service install", "der Marea-Agent läuft nicht, die Datei könnte also nicht zurückkommen: starte ihn mit  sudo mareactl service install"),
+"linux.no_capability": ("L'agente deve poter sorvegliare le aperture dei file (CAP_SYS_ADMIN). Installalo come servizio: sudo mareactl service install", "The agent needs permission to watch file opens (CAP_SYS_ADMIN). Install it as a service: sudo mareactl service install", "El agente necesita permiso para vigilar las aperturas de archivos (CAP_SYS_ADMIN). Instálalo como servicio: sudo mareactl service install", "L'agent doit pouvoir surveiller les ouvertures de fichiers (CAP_SYS_ADMIN). Installez-le comme service : sudo mareactl service install", "Der Agent braucht die Berechtigung, Dateiöffnungen zu überwachen (CAP_SYS_ADMIN). Installiere ihn als Dienst: sudo mareactl service install"),
+"linux.fanotify_failed": ("Linux non permette di sorvegliare le aperture dei file: {0}", "Linux refused to watch file opens: {0}", "Linux no permite vigilar las aperturas de archivos: {0}", "Linux refuse de surveiller les ouvertures de fichiers : {0}", "Linux verweigert die Überwachung von Dateiöffnungen: {0}"),
+"linux.fs_unsupported": ("Il file system di questa cartella non può contenere file liberati: servono attributi estesi e la rimozione dei blocchi (ext4, XFS e Btrfs li hanno).", "This folder's file system cannot hold freed files: it needs extended attributes and hole punching (ext4, XFS and Btrfs have both).", "El sistema de archivos de esta carpeta no puede guardar archivos liberados: necesita atributos extendidos y liberación de bloques (ext4, XFS y Btrfs los tienen).", "Le système de fichiers de ce dossier ne peut pas contenir de fichiers libérés : il faut les attributs étendus et la libération de blocs (ext4, XFS et Btrfs les ont).", "Das Dateisystem dieses Ordners kann keine freigegebenen Dateien halten: Es braucht erweiterte Attribute und Hole Punching (ext4, XFS und Btrfs haben beides)."),
+"linux.not_back": ("{0} non è tornato: nessuna fonte ha consegnato i byte giusti (vedi journalctl -u marea-agent@$USER)", "{0} did not come back: no source delivered the right bytes (see journalctl -u marea-agent@$USER)", "{0} no ha vuelto: ninguna fuente entregó los bytes correctos (ver journalctl -u marea-agent@$USER)", "{0} n'est pas revenu : aucune source n'a livré les bons octets (voir journalctl -u marea-agent@$USER)", "{0} ist nicht zurückgekommen: keine Quelle hat die richtigen Bytes geliefert (siehe journalctl -u marea-agent@$USER)"),
+"ev.platform_refused": ("il sistema ha rifiutato: {0}", "the system refused: {0}", "el sistema se negó: {0}", "le système a refusé : {0}", "das System hat abgelehnt: {0}"),
+"cli.service_usage": ("Uso: sudo mareactl service install|uninstall [--user NOME]", "Usage: sudo mareactl service install|uninstall [--user NAME]", "Uso: sudo mareactl service install|uninstall [--user NOMBRE]", "Usage : sudo mareactl service install|uninstall [--user NOM]", "Verwendung: sudo mareactl service install|uninstall [--user NAME]"),
+"cli.service_need_root": ("Serve sudo: sudo mareactl service install", "This needs sudo: sudo mareactl service install", "Necesita sudo: sudo mareactl service install", "Il faut sudo : sudo mareactl service install", "Das braucht sudo: sudo mareactl service install"),
+"cli.service_need_user": ("Per quale utente? Lancialo con sudo dal tuo utente oppure aggiungi --user NOME (non root).", "For which user? Run it with sudo from your own account or add --user NAME (not root).", "¿Para qué usuario? Ejecútalo con sudo desde tu cuenta o añade --user NOMBRE (no root).", "Pour quel utilisateur ? Lancez-le avec sudo depuis votre compte ou ajoutez --user NOM (pas root).", "Für welchen Benutzer? Starte es mit sudo von deinem Konto aus oder füge --user NAME hinzu (nicht root)."),
+"cli.service_installed": ("Agente installato e avviato per {0}: i file liberati tornano quando un programma li apre, anche dopo un riavvio. Stato: systemctl status marea-agent@{0}", "Agent installed and started for {0}: freed files come back when a program opens them, also after a restart. Status: systemctl status marea-agent@{0}", "Agente instalado e iniciado para {0}: los archivos liberados vuelven cuando un programa los abre, también tras reiniciar. Estado: systemctl status marea-agent@{0}", "Agent installé et démarré pour {0} : les fichiers libérés reviennent quand un programme les ouvre, même après un redémarrage. État : systemctl status marea-agent@{0}", "Agent für {0} installiert und gestartet: freigegebene Dateien kommen zurück, wenn ein Programm sie öffnet, auch nach einem Neustart. Status: systemctl status marea-agent@{0}"),
+"cli.service_removed": ("Agente fermato e disattivato per {0}.", "Agent stopped and disabled for {0}.", "Agente detenido y desactivado para {0}.", "Agent arrêté et désactivé pour {0}.", "Agent für {0} gestoppt und deaktiviert."),
+"cli.service_uninstall_warning": ("Senza agente i file liberati non possono tornare. Se stai togliendo Marea, prima riporta tutto con  mareactl restore-all --yes  poi ripeti con --yes.", "Without the agent, freed files cannot come back. If you are removing Marea, first bring everything back with  mareactl restore-all --yes  then repeat with --yes.", "Sin el agente, los archivos liberados no pueden volver. Si vas a quitar Marea, primero recupera todo con  mareactl restore-all --yes  y repite con --yes.", "Sans l'agent, les fichiers libérés ne peuvent pas revenir. Si vous retirez Marea, ramenez d'abord tout avec  mareactl restore-all --yes  puis recommencez avec --yes.", "Ohne Agent können freigegebene Dateien nicht zurückkommen. Wenn du Marea entfernst, hole zuerst alles zurück mit  mareactl restore-all --yes  und wiederhole dann mit --yes."),
 "root.already": ("La cartella è già gestita.", "The folder is already managed.", "La carpeta ya está gestionada.", "Le dossier est déjà géré.", "Der Ordner wird bereits verwaltet."),
 "root.overlap": ("Si sovrappone a una cartella già gestita: {0}", "It overlaps a folder already managed: {0}", "Se solapa con una carpeta ya gestionada: {0}", "Il chevauche un dossier déjà géré : {0}", "Er überschneidet sich mit einem bereits verwalteten Ordner: {0}"),
 "hub.bad_repo": ("Nome di repository non valido: {0}", "Invalid repository name: {0}", "Nombre de repositorio no válido: {0}", "Nom de dépôt invalide : {0}", "Ungültiger Repository-Name: {0}"),
@@ -271,6 +283,7 @@ T = {
 "hub.host_denied": ("Destinazione non consentita: {0}", "Destination not allowed: {0}", "Destino no permitido: {0}", "Destination non autorisée : {0}", "Ziel nicht erlaubt: {0}"),
 "hub.redirects": ("Troppi reindirizzamenti da Hugging Face.", "Too many redirects from Hugging Face.", "Demasiadas redirecciones de Hugging Face.", "Trop de redirections depuis Hugging Face.", "Zu viele Weiterleitungen von Hugging Face."),
 "hyd.size_differs": ("{0}: dimensione diversa", "{0}: different size", "{0}: tamaño distinto", "{0} : taille différente", "{0}: andere Größe"),
+"hyd.fingerprint_differs": ("i byte ricevuti non corrispondono all'impronta", "the bytes received do not match the fingerprint", "los bytes recibidos no coinciden con la huella", "les octets reçus ne correspondent pas à l'empreinte", "die empfangenen Bytes passen nicht zum Fingerabdruck"),
 "hyd.no_source": ("nessuna fonte disponibile", "no source available", "ninguna fuente disponible", "aucune source disponible", "keine Quelle verfügbar"),
 "hyd.source_stopped": ("la fonte si è interrotta", "the source stopped", "la fuente se interrumpió", "la source s'est interrompue", "die Quelle brach ab"),
 "hyd.mismatch_detail": ("da {0}: il file viene evaporato di nuovo per riscaricarlo da capo", "from {0}: the file is evaporated again to fetch it from scratch", "desde {0}: el archivo se evapora de nuevo para descargarlo desde cero", "depuis {0} : le fichier est de nouveau évaporé pour être récupéré à neuf", "von {0}: die Datei wird erneut verdunstet, um sie neu zu holen"),
@@ -508,6 +521,7 @@ mareactl replicate                                  copia i file unici sul mirro
 mareactl restore-all --yes                          uscita di emergenza: riporta tutto, sgancia tutto
 mareactl journal [n] [--json]                       ultime attività
 mareactl agent                                      servi i file evaporati senza l'app aperta
+mareactl service install|uninstall                  Linux: installa l'agente come servizio (con sudo)
 
 Opzioni: --json (documento JSON versionato), --yes (conferma le modifiche).
 Ambiente: MAREA_READONLY=1 (rifiuta ogni modifica), MAREA_DATA, MAREA_LANG.
@@ -528,6 +542,7 @@ mareactl replicate                                  copy unique files to the mir
 mareactl restore-all --yes                          emergency exit: bring everything back, detach everything
 mareactl journal [n] [--json]                       recent activity
 mareactl agent                                      serve evaporated files without the app open
+mareactl service install|uninstall                  Linux: install the agent as a service (with sudo)
 
 Options: --json (versioned JSON document), --yes (confirm changes).
 Environment: MAREA_READONLY=1 (refuse every change), MAREA_DATA, MAREA_LANG.
@@ -548,6 +563,7 @@ mareactl replicate                                  copiar archivos únicos al e
 mareactl restore-all --yes                          salida de emergencia: traer todo, desconectar todo
 mareactl journal [n] [--json]                       actividad reciente
 mareactl agent                                      servir archivos evaporados sin la app abierta
+mareactl service install|uninstall                  Linux: instalar el agente como servicio (con sudo)
 
 Opciones: --json (documento JSON versionado), --yes (confirmar cambios).
 Entorno: MAREA_READONLY=1 (rechaza todo cambio), MAREA_DATA, MAREA_LANG.
@@ -568,6 +584,7 @@ mareactl replicate                                  copier les fichiers uniques 
 mareactl restore-all --yes                          sortie de secours : tout ramener, tout détacher
 mareactl journal [n] [--json]                       activité récente
 mareactl agent                                      servir les fichiers évaporés sans l'application ouverte
+mareactl service install|uninstall                  Linux : installer l'agent comme service (avec sudo)
 
 Options : --json (document JSON versionné), --yes (confirmer les changements).
 Environnement : MAREA_READONLY=1 (refuse tout changement), MAREA_DATA, MAREA_LANG.
@@ -588,6 +605,7 @@ mareactl replicate                                  einzigartige Dateien auf den
 mareactl restore-all --yes                          Notausgang: alles zurückholen, alles lösen
 mareactl journal [n] [--json]                       letzte Aktivität
 mareactl agent                                      verdunstete Dateien ohne geöffnete App liefern
+mareactl service install|uninstall                  Linux: den Agenten als Dienst installieren (mit sudo)
 
 Optionen: --json (versioniertes JSON-Dokument), --yes (Änderungen bestätigen).
 Umgebung: MAREA_READONLY=1 (verweigert jede Änderung), MAREA_DATA, MAREA_LANG.

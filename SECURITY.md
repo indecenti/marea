@@ -68,6 +68,16 @@ must never do is lose data. This document lists what can go wrong and what stops
 - The load-safety check is static, like picklescan: an obfuscated pickle may evade it.
   "No code found" means only standard tensor rebuilding was found, not a guarantee.
 - Unsigned builds trigger SmartScreen. See `docs/DISTRIBUTION.md` for signing options.
+- Linux: freed files come back only while the agent (`marea-agent@<user>`) runs. Without it a
+  freed file reads as a short text notice followed by zeros, never as plausible model data, and
+  Marea refuses to free anything. The refill writes the first block last, so a file left half
+  refilled by a crash still starts with the notice.
+- Linux: the agent runs as the user with `CAP_SYS_ADMIN` (fanotify permission events),
+  `CAP_DAC_OVERRIDE`, `CAP_FOWNER` and `CAP_LEASE`, `NoNewPrivileges`, from a root-owned binary in
+  `/usr/local/bin`. Its socket sits in the user's data folder (mode 0600) and checks the caller's
+  uid (`SO_PEERCRED`); it only watches regular files of its own user that carry Marea's identity
+  attribute. Before freeing, a kernel write lease proves no other program has the file open or
+  mapped.
 
 ## Reporting a vulnerability
 

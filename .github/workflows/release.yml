@@ -95,6 +95,40 @@ jobs:
           $sign = if ($env:SIGNED -eq "true") { "Free code signing provided by SignPath.io, certificate by SignPath Foundation." } else { "Not code-signed yet: SmartScreen may warn." }
           gh release create "${{ github.ref_name }}" dist/*.zip dist/*.sha256 --prerelease --verify-tag --title "Marea ${{ github.ref_name }}" --notes "$verify $sign"
 
+  mareactl-linux:
+    # Marea for Linux servers: mareactl with the fanotify agent, as one self-contained binary.
+    needs: release
+    strategy:
+      matrix:
+        rid: [linux-x64, linux-arm64]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+        with:
+          dotnet-version: 10.0.x
+      - name: Publish mareactl
+        shell: bash
+        run: |
+          v="${GITHUB_REF_NAME#v}"
+          dotnet publish src/Marea.Cli -f net10.0 -c Release -r ${{ matrix.rid }} --self-contained true             -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true             -p:DebugType=none -p:Version=$v -o out
+          cp README.md LICENSE SECURITY.md out/
+          name="mareactl-$v-${{ matrix.rid }}"
+          tar -czf "$name.tar.gz" -C out mareactl README.md LICENSE SECURITY.md
+          sha256sum "$name.tar.gz" > "$name.tar.gz.sha256"
+          echo "ASSET=$name.tar.gz" >> "$GITHUB_ENV"
+      - name: End-to-end test on the native target
+        if: matrix.rid == 'linux-x64'
+        run: sudo bash build/linux-selftest.sh out/mareactl "$USER"
+      - name: Attest build provenance
+        uses: actions/attest-build-provenance@e8998f949152b193b063cb0ec769d69d929409be # v2.4.0
+        with:
+          subject-path: ${{ env.ASSET }}
+      - name: Attach to the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "$GITHUB_REF_NAME" "$ASSET" "$ASSET.sha256" --clobber
+
   marea-check:
     # The standalone model safety check for every OS, attached to the same release. macOS
     # binaries are built on a Mac so the .NET SDK can ad-hoc sign them (required on Apple Silicon).

@@ -81,6 +81,10 @@ public static class SyncRoot
     /// <summary>True when <paramref name="path"/> lies inside a sync root registered by Marea.</summary>
     public static bool IsMareaRoot(string path) => ProviderNameOf(path) == ProviderName;
 
+    /// <summary>Null when files under <paramref name="root"/> can be freed now, else a translation key
+    /// (always null on Windows: the cloud filter fails reads cleanly while no provider is connected).</summary>
+    public static string? NotReadyKey(string root) => null;
+
     /// <summary>True when <paramref name="path"/> lies inside a sync root of another provider (e.g. OneDrive).</summary>
     public static bool IsForeignRoot(string path)
     {
