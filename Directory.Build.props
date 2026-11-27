@@ -17,5 +17,7 @@
     <NuGetAuditLevel>low</NuGetAuditLevel>
     <WarningsAsErrors>$(WarningsAsErrors);NU1901;NU1902;NU1903;NU1904</WarningsAsErrors>
     <Deterministic>true</Deterministic>
+    <!-- mareactl also builds on Linux: let a Linux machine restore the Windows targets it skips. -->
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
   </PropertyGroup>
 </Project>
