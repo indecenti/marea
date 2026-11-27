@@ -22,6 +22,19 @@ if (cmd == "check")
     return ModelCommands.Check(positional, json);
 }
 
+if (cmd == "clutter")
+{
+    // Read-only and independent of the ledger, like check: nothing to set up first.
+    UseLanguage(Environment.GetEnvironmentVariable("MAREA_LANG"));
+    var i = Array.IndexOf(args, "--days");
+    if (i >= 0 && !(i + 1 < args.Length && int.TryParse(args[i + 1], out _)))
+    {
+        Console.Error.WriteLine(Loc.T("cli.missing_arg"));
+        return Exit.Usage;
+    }
+    return ClutterCommands.Clutter(json, i >= 0 ? Math.Max(0, int.Parse(args[i + 1])) : 7);
+}
+
 using var engine = new MareaEngine(Environment.GetEnvironmentVariable("MAREA_DATA"));
 UseLanguage(Environment.GetEnvironmentVariable("MAREA_LANG") ?? engine.Settings.Language);
 var progress = new Progress<ScanProgress>(p =>

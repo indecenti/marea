@@ -348,6 +348,7 @@ mareactl add <folder>                             manage a folder
 mareactl scan                                     fingerprints, sources, classes, model headers
 mareactl models [--unused N|--rollback] [--json]  every model, unused ones, or Ollama rollback copies
 mareactl check <file|folder>... [--json]          safety check before loading (no setup needed)
+mareactl clutter [--days N] [--json]              caches, idle temp files, crash dumps (touches nothing)
 mareactl watch [--no-rescue] [--json]            check public sources, rescue models at risk
 mareactl plan [--gb N] [--instant] [--json]       what would evaporate (touches nothing)
 mareactl free [--gb N|--all|--rollback] [--instant] --yes   quick cleanup, undoable

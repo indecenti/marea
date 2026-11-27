@@ -503,6 +503,22 @@ T = {
 "models.rollback_help": ("{0} di questo modello sono l'originale che Ollama tiene solo per poter tornare a una sua versione precedente: oggi usa la copia convertita. Marea può liberarli senza cancellarli. Se un giorno torni indietro, rientrano da soli dal registro di Ollama.", "{0} of this model is the original Ollama keeps only so you can go back to an older Ollama: today it uses the converted copy. Marea can free it without deleting it. If you ever go back, it returns on its own from the Ollama registry.", "{0} de este modelo son el original que Ollama guarda solo para poder volver a una versión anterior: hoy usa la copia convertida. Marea puede liberarlos sin borrarlos. Si algún día vuelves atrás, regresan solos desde el registro de Ollama.", "{0} de ce modèle sont l'original qu'Ollama garde seulement pour revenir à une version antérieure : aujourd'hui il utilise la copie convertie. Marea peut les libérer sans les supprimer. Si un jour vous revenez en arrière, ils reviennent seuls depuis le registre d'Ollama.", "{0} dieses Modells sind das Original, das Ollama nur für die Rückkehr zu einer älteren Version behält: Heute nutzt es die umgewandelte Kopie. Marea kann sie freigeben, ohne sie zu löschen. Gehst du je zurück, kommen sie von selbst aus der Ollama-Registry zurück.", "{0} deste modelo são o original que o Ollama mantém apenas para que você possa voltar a uma versão anterior do Ollama: hoje ele usa a cópia convertida. O Marea pode liberá-los sem apagar nada. Se um dia você voltar atrás, eles retornam sozinhos do registro do Ollama.", "此模型有 {0} 是 Ollama 仅为方便你回退到旧版 Ollama 而保留的原件：现在它使用的是转换后的副本。Marea 可以释放它而不删除它。如果你日后回退，它会自动从 Ollama 注册表取回。"),
 "models.rollback_tag": ("copia di rollback", "rollback copy", "copia de reversión", "copie de retour arrière", "Rollback-Kopie", "cópia de reversão", "回滚副本"),
 "cli.rollback_total": ("Copie di rollback di Ollama: {0} file, {1}. Liberale con: mareactl free --rollback --yes", "Ollama rollback copies: {0} files, {1}. Free them with: mareactl free --rollback --yes", "Copias de reversión de Ollama: {0} archivos, {1}. Libéralas con: mareactl free --rollback --yes", "Copies de retour arrière d'Ollama : {0} fichiers, {1}. Libérez-les avec : mareactl free --rollback --yes", "Ollama-Rollback-Kopien: {0} Dateien, {1}. Freigeben mit: mareactl free --rollback --yes", "Cópias de reversão do Ollama: {0} arquivos, {1}. Libere-as com: mareactl free --rollback --yes", "Ollama 回滚副本：{0} 个文件，{1}。释放它们：mareactl free --rollback --yes"),
+# --- 0.9: clutter (regenerable space outside the model folders)
+"clutter.kind.package_cache": ("Cache di pacchetti", "Package cache", "Caché de paquetes", "Cache de paquets", "Paket-Cache", "Cache de pacotes", "软件包缓存"),
+"clutter.kind.stale_temp": ("Temporanei fermi", "Idle temporary files", "Temporales inactivos", "Temporaires inactifs", "Ungenutzte Temp-Dateien", "Temporários parados", "闲置的临时文件"),
+"clutter.kind.crash_dumps": ("Dump di arresto", "Crash dumps", "Volcados de errores", "Vidages sur incident", "Absturzabbilder", "Despejos de falha", "崩溃转储"),
+"clutter.kind.hibernation": ("File di ibernazione", "Hibernation file", "Archivo de hibernación", "Fichier d'hibernation", "Ruhezustandsdatei", "Arquivo de hibernação", "休眠文件"),
+"clutter.kind.virtual_disk": ("Dischi virtuali", "Virtual disks", "Discos virtuales", "Disques virtuels", "Virtuelle Datenträger", "Discos virtuais", "虚拟磁盘"),
+"clutter.hint.command": ("{0} la riscarica quando serve. Per svuotarla: {1}", "{0} downloads it again when needed. To empty it: {1}", "{0} la descarga de nuevo cuando hace falta. Para vaciarla: {1}", "{0} le retélécharge au besoin. Pour le vider : {1}", "{0} lädt ihn bei Bedarf neu. Zum Leeren: {1}", "{0} baixa de novo quando precisar. Para esvaziar: {1}", "{0} 会在需要时重新下载。清空命令：{1}"),
+"clutter.hint.no_command": ("{0} la ricrea quando serve, ma non ha un comando per svuotarla: elimina la cartella a {0} fermo", "{0} rebuilds it when needed but has no command to empty it: delete the folder while {0} is not running", "{0} la recrea cuando hace falta, pero no tiene un comando para vaciarla: elimina la carpeta con {0} detenido", "{0} le recrée au besoin mais n'a pas de commande pour le vider : supprimez le dossier quand {0} est arrêté", "{0} baut ihn bei Bedarf neu auf, hat aber keinen Befehl zum Leeren: Ordner löschen, während {0} nicht läuft", "{0} recria quando precisar, mas não tem um comando para esvaziar: apague a pasta com {0} parado", "{0} 会在需要时重建，但没有清空命令：请在 {0} 未运行时删除该文件夹"),
+"clutter.hint.temp": ("{0} elementi in cui nessuno scrive da più di {1} giorni: si possono eliminare", "{0} entries nothing has written to for more than {1} days: safe to delete", "{0} elementos en los que nadie escribe desde hace más de {1} días: se pueden eliminar", "{0} éléments où rien n'a été écrit depuis plus de {1} jours : peuvent être supprimés", "{0} Einträge, in die seit mehr als {1} Tagen nichts geschrieben wurde: können gelöscht werden", "{0} itens em que nada é gravado há mais de {1} dias: podem ser apagados", "{0} 个项目已超过 {1} 天无任何写入：可以安全删除"),
+"clutter.hint.crash_dumps": ("servono solo per il debug: si possono eliminare", "kept only for debugging: safe to delete", "solo sirven para depurar: se pueden eliminar", "ne servent qu'au débogage : peuvent être supprimés", "nur für die Fehlersuche: können gelöscht werden", "servem apenas para depuração: podem ser apagados", "仅用于调试：可以安全删除"),
+"clutter.hint.hibernation": ("spazio riservato da Windows; si libera disattivando l'ibernazione (da amministratore, si perde l'avvio rapido): {0}", "space reserved by Windows; freed by turning hibernation off (as administrator, fast startup goes with it): {0}", "espacio reservado por Windows; se libera desactivando la hibernación (como administrador, se pierde el inicio rápido): {0}", "espace réservé par Windows ; libéré en désactivant l'hibernation (en administrateur, le démarrage rapide disparaît) : {0}", "von Windows reserviert; wird frei, wenn der Ruhezustand abgeschaltet wird (als Administrator, der Schnellstart entfällt): {0}", "espaço reservado pelo Windows; é liberado ao desativar a hibernação (como administrador, perde-se a inicialização rápida): {0}", "Windows 保留的空间；关闭休眠即可释放（需管理员权限，快速启动也会随之关闭）：{0}"),
+"clutter.hint.virtual_disk": ("{0} dischi di macchine virtuali: contengono dati veri, non si eliminano; si possono compattare a macchina spenta", "{0} virtual machine disks: they hold real data and are not to be deleted; they can be compacted while the machine is shut down", "{0} discos de máquinas virtuales: contienen datos reales y no se eliminan; se pueden compactar con la máquina apagada", "{0} disques de machines virtuelles : ils contiennent de vraies données et ne se suppriment pas ; ils peuvent être compactés machine arrêtée", "{0} Datenträger virtueller Maschinen: echte Daten, nicht löschen; bei heruntergefahrener Maschine komprimierbar", "{0} discos de máquinas virtuais: contêm dados reais e não devem ser apagados; podem ser compactados com a máquina desligada", "{0} 个虚拟机磁盘：其中是真实数据，不可删除；关闭虚拟机后可以压缩"),
+"clutter.more": ("… e altri {0}", "… and {0} more", "… y {0} más", "… et {0} autres", "… und {0} weitere", "… e mais {0}", "……以及另外 {0} 个"),
+"clutter.total": ("Rigenerabili: {0} in {1} posti. Qui Marea non elimina nulla: usa il comando indicato su ogni riga.", "Regenerable: {0} in {1} places. Marea deletes nothing here: use the command shown on each line.", "Regenerables: {0} en {1} lugares. Aquí Marea no elimina nada: usa el comando indicado en cada línea.", "Régénérables : {0} dans {1} emplacements. Ici Marea ne supprime rien : utilisez la commande indiquée sur chaque ligne.", "Wiederherstellbar: {0} an {1} Orten. Marea löscht hier nichts: den Befehl aus der jeweiligen Zeile verwenden.", "Regeneráveis: {0} em {1} lugares. Aqui o Marea não apaga nada: use o comando indicado em cada linha.", "可重新生成：{0}，共 {1} 处。Marea 在这里不删除任何东西：请使用每行给出的命令。"),
+"clutter.other": ("Richiedono una decisione (non contati sopra):", "Needs a decision (not counted above):", "Requieren una decisión (no contados arriba):", "Demandent une décision (non comptés ci-dessus) :", "Erfordert eine Entscheidung (oben nicht mitgezählt):", "Exigem uma decisão (não contados acima):", "需要你来决定（未计入上面的合计）："),
+"clutter.none": ("Nessuno spazio rigenerabile degno di nota.", "No regenerable space worth mentioning.", "Ningún espacio regenerable digno de mención.", "Aucun espace régénérable notable.", "Kein nennenswerter wiederherstellbarer Speicher.", "Nenhum espaço regenerável digno de nota.", "没有值得一提的可重新生成空间。"),
 }
 
 HELP = {
@@ -515,6 +531,7 @@ mareactl check <file|cartella>... [--json]          controlla file o cartelle pr
 mareactl watch [--no-rescue] [--json]               controlla le fonti pubbliche, salva i modelli a rischio
 mareactl free [--gb N|--all|--rollback] [--instant] --yes libera spazio in fretta (annullabile)
 mareactl undo                                       annulla l'ultima liberazione
+mareactl clutter [--days N] [--json]                cache, temporanei fermi e dump rigenerabili (senza toccare nulla)
 mareactl plan [--gb N] [--json]                     cosa evaporerebbe la marea (senza toccare nulla)
 mareactl evaporate [--gb N] --yes                   evapora secondo il piano
 mareactl restore <file>                             riporta subito un file sul disco
@@ -536,6 +553,7 @@ mareactl check <file|folder>... [--json]            check files or folders befor
 mareactl watch [--no-rescue] [--json]               check public sources, rescue models at risk
 mareactl free [--gb N|--all|--rollback] [--instant] --yes free space quickly (undoable)
 mareactl undo                                       undo the last cleanup
+mareactl clutter [--days N] [--json]                caches, idle temp files and crash dumps that can be regenerated (touches nothing)
 mareactl plan [--gb N] [--json]                     what the tide would evaporate (touches nothing)
 mareactl evaporate [--gb N] --yes                   evaporate according to the plan
 mareactl restore <file>                             bring one file back now
@@ -557,6 +575,7 @@ mareactl check <archivo|carpeta>... [--json]        revisar archivos o carpetas 
 mareactl watch [--no-rescue] [--json]               revisar fuentes públicas, rescatar modelos en riesgo
 mareactl free [--gb N|--all|--rollback] [--instant] --yes liberar espacio rápido (se puede deshacer)
 mareactl undo                                       deshacer la última liberación
+mareactl clutter [--days N] [--json]                cachés, temporales inactivos y volcados regenerables (no toca nada)
 mareactl plan [--gb N] [--json]                     qué evaporaría la marea (no toca nada)
 mareactl evaporate [--gb N] --yes                   evaporar según el plan
 mareactl restore <archivo>                          traer un archivo de vuelta ahora
@@ -578,6 +597,7 @@ mareactl check <fichier|dossier>... [--json]        vérifier des fichiers ou do
 mareactl watch [--no-rescue] [--json]               vérifier les sources publiques, sauver les modèles menacés
 mareactl free [--gb N|--all|--rollback] [--instant] --yes libérer de l'espace vite (annulable)
 mareactl undo                                       annuler la dernière libération
+mareactl clutter [--days N] [--json]                caches, temporaires inactifs et vidages régénérables (ne touche à rien)
 mareactl plan [--gb N] [--json]                     ce que la marée évaporerait (ne touche à rien)
 mareactl evaporate [--gb N] --yes                   évaporer selon le plan
 mareactl restore <fichier>                          ramener un fichier sur le disque maintenant
@@ -599,6 +619,7 @@ mareactl check <Datei|Ordner>... [--json]           Dateien oder Ordner vor dem 
 mareactl watch [--no-rescue] [--json]               öffentliche Quellen prüfen, gefährdete Modelle retten
 mareactl free [--gb N|--all|--rollback] [--instant] --yes schnell Speicher freigeben (rückgängig machbar)
 mareactl undo                                       letzte Freigabe rückgängig machen
+mareactl clutter [--days N] [--json]                Caches, ungenutzte Temp-Dateien und Absturzabbilder, die neu entstehen können (ändert nichts)
 mareactl plan [--gb N] [--json]                     was die Flut verdunsten würde (ändert nichts)
 mareactl evaporate [--gb N] --yes                   nach Plan verdunsten
 mareactl restore <Datei>                            eine Datei sofort zurückholen
@@ -620,6 +641,7 @@ mareactl check <arquivo|pasta>... [--json]          verificar arquivos ou pastas
 mareactl watch [--no-rescue] [--json]               verificar as fontes públicas, resgatar modelos em risco
 mareactl free [--gb N|--all|--rollback] [--instant] --yes liberar espaço rapidamente (pode ser desfeito)
 mareactl undo                                       desfazer a última limpeza
+mareactl clutter [--days N] [--json]                caches, temporários parados e despejos regeneráveis (não altera nada)
 mareactl plan [--gb N] [--json]                     o que a maré evaporaria (não altera nada)
 mareactl evaporate [--gb N] --yes                   evaporar de acordo com o plano
 mareactl restore <arquivo>                          trazer um arquivo de volta agora
@@ -641,6 +663,7 @@ mareactl check <file|folder>... [--json]            加载前检查文件或文�
 mareactl watch [--no-rescue] [--json]               检查公开来源，抢救有风险的模型
 mareactl free [--gb N|--all|--rollback] [--instant] --yes 快速释放空间（可撤销）
 mareactl undo                                       撤销上次清理
+mareactl clutter [--days N] [--json]                可重新生成的缓存、闲置临时文件和崩溃转储（不做任何改动）
 mareactl plan [--gb N] [--json]                     潮汐将会蒸发的内容（不做任何改动）
 mareactl evaporate [--gb N] --yes                   按计划蒸发
 mareactl restore <file>                             立即取回一个文件

@@ -19,6 +19,7 @@ Platform: Windows 10 1809+ and Windows 11, x64, NTFS; Linux x64/ARM64 through ma
 
 - `mareactl check <file|folder> --json`: safety of model files before loading (exit 0 ok, 3 check before loading, 4 dangerous); works without setup
 - `mareactl models --json`: inventory of managed models (format, quantization, parameters, source, safety, last use); `--unused 90` lists models not used for 90 days
+- `mareactl clutter --json`: space that is not a model but can be regenerated (pip, uv, npm, NuGet, Gradle, Cargo caches; temporary entries idle for 7 days; crash dumps) with the owner tool's clean command, plus hibernation file and virtual disks as "needs a decision"; read-only, Marea deletes none of it; works without setup
 - `mareactl plan --gb N --instant --json`: what could be freed and how it would come back (changes nothing)
 - `mareactl free --gb N --instant --yes`: free space, undoable with `mareactl undo`
 - `mareactl watch --no-rescue --json`: models whose public source is disappearing (exit 3 at risk, 4 lost)

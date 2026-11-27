@@ -20,6 +20,7 @@ doing anything a person did not approve.
 | Which files does Ollama keep only for a downgrade? | `mareactl models --rollback --json` | No |
 | Free those rollback copies (undoable, they return from the registry) | `mareactl free --rollback --yes` | Yes |
 | Disk and ledger status | `mareactl status --json` | No |
+| What else fills the disk and can be regenerated (caches, idle temp files)? | `mareactl clutter [--days N] --json` | No (works without setup) |
 | What could be freed, and how it would come back | `mareactl plan [--gb N] [--instant] --json` | No |
 | Recent activity | `mareactl journal [n] --json` | No |
 | Refresh fingerprints, sources and model metadata | `mareactl scan --json` | Ledger only, never files |
@@ -131,6 +132,43 @@ Plan: `items` with `path`, `sizeBytes`, `class`, `returnPath` (`local_copy`, `re
 `download`), `returnSeconds`, `instant`; and `totalBytes`.
 Journal: `entries` with `at`, `action` (stable code), `text` (translated), `path`, `bytes`, `ok`,
 `detail`.
+
+### `marea.clutter/1`
+
+Space that is not a model but that the machine can produce again. Marea only measures it: it
+never deletes, and every item names the command of the tool that owns the data.
+
+```json
+{
+  "schema": "marea.clutter/1",
+  "staleDays": 7,
+  "reclaimableBytes": 9234567890,
+  "otherBytes": 20401094656,
+  "items": [
+    {
+      "id": "pip",
+      "kind": "package_cache",
+      "path": "C:\\Users\\you\\AppData\\Local\\pip\\Cache",
+      "sizeBytes": 8234567890,
+      "files": 2790,
+      "newest": "2026-11-20T09:14:02Z",
+      "command": "pip cache purge",
+      "reclaimable": true,
+      "parts": []
+    }
+  ]
+}
+```
+
+`kind` is one of `package_cache` (`id`: `pip`, `uv`, `npm`, `yarn`, `pnpm`, `nuget`, `go`, `gradle`,
+`cargo`; `command` is absent when the tool has no clean command), `stale_temp` (`id` `temp`: entries
+of the temporary folder nothing has written to for `staleDays` days, listed in `parts`; a large
+folder that is still in use is judged entry by entry, two levels deep), `crash_dumps`,
+`hibernation` and `virtual_disk`. The last two have `reclaimable: false` and are counted in
+`otherBytes`, never in `reclaimableBytes`: the hibernation file goes only by turning hibernation
+off, and a virtual disk holds real data and can only be compacted. Items under 100 MB are left out.
+Junctions and symbolic links are never followed. An agent should show the list and run a `command`
+only after the user agrees; for `stale_temp` it should delete only the paths in `parts`.
 
 ## Limits worth knowing
 

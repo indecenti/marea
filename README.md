@@ -430,6 +430,7 @@ mareactl models [--unused N|--rollback] [--json] every model, unused ones, Ollam
 mareactl check <file|folder> [--json]            safety check before loading (no setup needed)
 mareactl watch [--no-rescue] [--json]            check public sources, rescue models at risk
 mareactl plan [--gb N]                           what would be freed (touches nothing)
+mareactl clutter [--days N] [--json]             caches, idle temp files, crash dumps (touches nothing)
 mareactl free [--gb N|--all|--rollback] [--instant] --yes   quick cleanup, undoable
 mareactl evaporate [--gb N] --yes                evaporate according to the plan
 mareactl undo                                    undo the last cleanup
