@@ -16,7 +16,15 @@ public static class OllamaNames
     public static Dictionary<string, List<string>> Read(string modelsDir) =>
         ReadTags(modelsDir).ToDictionary(kv => kv.Key, kv => kv.Value.Select(t => t.Name).ToList(), StringComparer.Ordinal);
 
-    /// <summary>Model-layer digest (sha256 hex) → local tags using it, sorted by name.</summary>
+    /// <summary>Layers that are part of a model's weights (not license, template or parameters).</summary>
+    private static readonly HashSet<string> WeightTypes =
+    [
+        "application/vnd.ollama.image.model", "application/vnd.ollama.image.projector", "application/vnd.ollama.image.adapter",
+        "application/vnd.ollama.image.draft",
+    ];
+
+    /// <summary>Model-layer digest (sha256 hex) → local tags using it, sorted by name. Blobs Ollama converted
+    /// on this PC are named after the tag the user pulled, never after the hidden <c>llamacpp:</c> tag.</summary>
     public static Dictionary<string, List<OllamaTag>> ReadTags(string modelsDir)
     {
         var tags = new Dictionary<string, List<OllamaTag>>(StringComparer.Ordinal);
@@ -34,6 +42,10 @@ public static class OllamaNames
                 continue;
             }
             var tag = new OllamaTag(parts[0], string.Join('/', parts[1..^1]), parts[^1], Display(parts));
+            if (OllamaLayout.IsShadow(tag.Host, tag.Repository, tag.Tag))
+            {
+                continue;
+            }
             try
             {
                 using var doc = JsonDocument.Parse(File.ReadAllText(file));
@@ -45,14 +57,9 @@ public static class OllamaNames
                 {
                     var media = layer.TryGetProperty("mediaType", out var m) ? m.GetString() : null;
                     var digest = layer.TryGetProperty("digest", out var d) ? d.GetString() ?? "" : "";
-                    if (media == "application/vnd.ollama.image.model" && digest.StartsWith("sha256:", StringComparison.Ordinal))
+                    if (media is not null && WeightTypes.Contains(media) && digest.StartsWith("sha256:", StringComparison.Ordinal))
                     {
-                        var hex = digest[7..];
-                        if (!tags.TryGetValue(hex, out var list))
-                        {
-                            tags[hex] = list = [];
-                        }
-                        list.Add(tag);
+                        Add(tags, digest[7..], tag);
                     }
                 }
             }
@@ -61,11 +68,30 @@ public static class OllamaNames
                 // An unreadable manifest only means one name fewer.
             }
         }
+        foreach (var (hex, child) in OllamaLayout.Read(modelsDir).Children)
+        {
+            if (!tags.ContainsKey(hex))
+            {
+                Add(tags, hex, child.Parent);
+            }
+        }
         foreach (var list in tags.Values)
         {
             list.Sort((a, b) => string.Compare(a.Name, b.Name, StringComparison.OrdinalIgnoreCase));
         }
         return tags;
+    }
+
+    private static void Add(Dictionary<string, List<OllamaTag>> tags, string hex, OllamaTag tag)
+    {
+        if (!tags.TryGetValue(hex, out var list))
+        {
+            tags[hex] = list = [];
+        }
+        if (!list.Contains(tag))
+        {
+            list.Add(tag);
+        }
     }
 
     /// <summary>host/namespace/model/tag → the short name the Ollama CLI shows.</summary>

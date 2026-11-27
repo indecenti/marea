@@ -64,6 +64,10 @@ gefunden*, *Vor dem Laden prüfen* (ungewöhnliche Importe, TorchScript-Code, GG
 aus ihrer Sandbox ausbrechen wollen) oder *Gefährlich*. Ein gerade geladenes Modell prüfen:
 `mareactl check <Datei oder Ordner>`.
 
+## Neu in 0.7
+
+Ollama 0.40 hat einige GGUF-Modelle umgewandelt und das Original zusätzlich behalten, nur für die Rückkehr zu einer älteren Version: Diese Modelle belegen doppelt so viel Platz. Marea findet diese **Rollback-Kopien** jetzt und gibt sie frei, ohne sie zu löschen: Gehst du je zu einem älteren Ollama zurück, kommt das Original von selbst aus der Ollama-Registry zurück.
+
 ## Neu in 0.6
 
 Die Sicherheitsprüfung für Modelle läuft jetzt auch auf **macOS und Linux**: `marea-check` unter Releases herunterladen (gleiche Urteile, JSON und Exit-Codes wie `mareactl check`). Beim ersten Start findet Marea auch die Ordner von **LM Studio, Jan und GPT4All**, und bei Dateien von Hugging Face zeigt es, was **die Sicherheitsscanner von Hugging Face** melden.

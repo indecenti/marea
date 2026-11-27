@@ -17,6 +17,8 @@ doing anything a person did not approve.
 | Same, on macOS or Linux | `marea-check <file-or-folder> --json` (standalone binary from Releases) | No |
 | What models are on this machine? | `mareactl models --json` | No |
 | Which models have not been used for N days? | `mareactl models --unused 90 --json` | No |
+| Which files does Ollama keep only for a downgrade? | `mareactl models --rollback --json` | No |
+| Free those rollback copies (undoable, they return from the registry) | `mareactl free --rollback --yes` | Yes |
 | Disk and ledger status | `mareactl status --json` | No |
 | What could be freed, and how it would come back | `mareactl plan [--gb N] [--instant] --json` | No |
 | Recent activity | `mareactl journal [n] --json` | No |
@@ -109,9 +111,9 @@ GGUF files also report `architecture`, `name`, `precision` (quantization, e.g. `
 One entry per model (Hugging Face cache repository, Ollama model, model folder, sharded
 checkpoint or single file): `name`, `kind`, `folder`, `formats`, `precisions`, `architecture`,
 `parameters`, `sizeBytes`, `evaporatedBytes`, `state` (`on_disk`, `partly`, `evaporated`), `lastUsed`,
-`hubScan` (`clean`, `caution`, `unsafe`, or absent),
+`hubScan` (`clean`, `caution`, `unsafe`, or absent), `rollbackBytes` (Ollama rollback copies still counted in the model),
 `safety`, `findings`, and `files` with `path`, `sizeBytes`, `sha256`, `class`, `residency`,
-`format`, `safety`.
+`format`, `safety`, `ollamaRollback` (true for an original Ollama keeps only for a downgrade).
 
 ### `marea.watch/1`
 

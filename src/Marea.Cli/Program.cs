@@ -61,7 +61,7 @@ async Task<int> Dispatch()
             {
                 var i = Array.IndexOf(args, "--unused");
                 int? days = i >= 0 && i + 1 < args.Length && int.TryParse(args[i + 1], out var d) && d >= 0 ? d : null;
-                return ModelCommands.Models(engine, json, days);
+                return ModelCommands.Models(engine, json, days, args.Contains("--rollback"));
             }
         case "add":
             {
@@ -103,7 +103,13 @@ async Task<int> Dispatch()
             {
                 // Quick mode: --all for everything safe, --gb N for an amount; --instant keeps only
                 // files that come back offline in seconds (local copy or recipe).
-                var plan = engine.Plan(args.Contains("--all") ? 0 : GbArg() > 0 ? GbArg() : 10L << 30, args.Contains("--instant"));
+                var plan = engine.Plan(args.Contains("--all") || args.Contains("--rollback") ? 0 : GbArg() > 0 ? GbArg() : 10L << 30, args.Contains("--instant"));
+                if (args.Contains("--rollback"))
+                {
+                    // Only the copies Ollama keeps for a downgrade; the gate still decides file by file.
+                    var rollback = engine.OllamaRollbackFiles().Select(f => f.Path).ToHashSet(StringComparer.OrdinalIgnoreCase);
+                    plan = plan.Where(p => rollback.Contains(p.File.Path)).ToList();
+                }
                 return await EvaporatePlan(plan, "quick-" + DateTime.UtcNow.ToString("yyyyMMddHHmmssfff"));
             }
         case "undo":

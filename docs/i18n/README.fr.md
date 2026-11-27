@@ -64,6 +64,10 @@ pickle de Python. Marea lit ses instructions **sans les exécuter** et donne un 
 TorchScript, modèles de chat GGUF qui tentent de sortir de leur sandbox) ou *Dangereux*. Pour
 vérifier un modèle tout juste téléchargé : `mareactl check <fichier ou dossier>`.
 
+## Nouveautés de la 0.7
+
+Ollama 0.40 a converti certains modèles GGUF et a aussi gardé l'original, seulement pour revenir à une version antérieure : ces modèles prennent deux fois plus de place. Marea trouve maintenant ces **copies de retour arrière** et les libère sans les supprimer : si un jour vous revenez à un Ollama plus ancien, l'original revient seul depuis le registre d'Ollama.
+
 ## Nouveautés de la 0.6
 
 La vérification de sécurité des modèles fonctionne aussi sur **macOS et Linux** : téléchargez `marea-check` depuis Releases (mêmes verdicts, JSON et codes de sortie que `mareactl check`). Au premier lancement, Marea trouve aussi les dossiers de **LM Studio, Jan et GPT4All**, et pour les fichiers venant de Hugging Face il affiche ce qu'en disent **les scanners de sécurité de Hugging Face**.

@@ -23,7 +23,7 @@ public partial class ModelsView : UserControl, IRefreshable
     public ModelsView()
     {
         InitializeComponent();
-        Filter.ItemsSource = new[] { "all", "unused", "attention", "at_risk", "gguf", "safetensors", "pickle", "evaporated" }
+        Filter.ItemsSource = new[] { "all", "unused", "attention", "at_risk", "gguf", "safetensors", "pickle", "evaporated", "rollback" }
             .Select(k => Loc.T("models.filter_" + k)).ToList();
         _ready = true;
         Filter.SelectedIndex = 0;
@@ -42,6 +42,10 @@ public partial class ModelsView : UserControl, IRefreshable
         AttentionChip.Visibility = attention > 0 ? Visibility.Visible : Visibility.Collapsed;
         AttentionText.Text = Loc.T(attention == 1 ? "models.attention_one" : "models.attention", attention);
         TotalText.Text = Loc.T("models.total", all.Count, Fmt.Gb(all.Sum(m => m.Size)));
+        var rollbackBytes = all.SelectMany(m => m.RollbackFiles).Where(f => f.Residency == Residency.Local).Sum(f => f.Size);
+        RollbackChip.Visibility = rollbackBytes > 0 && Filter.SelectedIndex != RollbackFilter ? Visibility.Visible : Visibility.Collapsed;
+        RollbackText.Text = Loc.T("models.rollback_chip", Fmt.Gb(rollbackBytes));
+        System.Windows.Automation.AutomationProperties.SetName(RollbackChip, RollbackText.Text);
         IEnumerable<ModelEntry> models = Filter.SelectedIndex switch
         {
             1 => all.Where(m => m.UnusedFor(UnusedDays, DateTime.UtcNow)),
@@ -51,6 +55,7 @@ public partial class ModelsView : UserControl, IRefreshable
             5 => all.Where(m => m.Formats.Contains("safetensors")),
             6 => all.Where(m => m.Formats.Any(f => f is "PyTorch" or "TorchScript" or "pickle")),
             7 => all.Where(m => m.State != ModelResidency.OnDisk),
+            RollbackFilter => all.Where(m => m.RollbackFiles.Count > 0),
             _ => all,
         };
         var q = Search.Text.Trim();
@@ -62,7 +67,9 @@ public partial class ModelsView : UserControl, IRefreshable
         }
         var rows = models.Select(ToRow).ToList();
         FreeUnusedButton.Visibility = Filter.SelectedIndex == 1 && rows.Any(r => r.Model.State != ModelResidency.Evaporated)
+                                      || Filter.SelectedIndex == RollbackFilter && rollbackBytes > 0
             ? Visibility.Visible : Visibility.Collapsed;
+        FreeText.Text = Loc.T(Filter.SelectedIndex == RollbackFilter ? "models.free_rollback" : "models.free_unused");
         Grid.ItemsSource = rows;
         EmptyText.Visibility = rows.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
         OnSelection(this, null!);
@@ -145,13 +152,19 @@ public partial class ModelsView : UserControl, IRefreshable
             DetailIcon.Data = row.SourceIcon;
             DetailTitle.Text = $"{m.Name}  ·  {row.Source}";
         }
+        var rollback = m.RollbackFiles.Where(f => f.Residency == Residency.Local).Sum(f => f.Size);
+        if (rollback > 0)
+        {
+            text += "\n\n" + Loc.T("models.rollback_help", Fmt.Gb(rollback));
+        }
         DetailText.Text = text;
         RescueButton.Visibility = row.Risk?.Action == WatchAction.Rescue ? Visibility.Visible : Visibility.Collapsed;
         ProtectButton.Visibility = row.Risk?.Action == WatchAction.Protect ? Visibility.Visible : Visibility.Collapsed;
         ProtectButton.IsEnabled = !string.IsNullOrEmpty(App.Engine.Settings.MirrorRoot);
         ProtectButton.ToolTip = ProtectButton.IsEnabled ? null : Loc.T("models.protect_no_mirror");
         DetailFiles.Text = string.Join("\n", m.Files.Zip(m.Meta).Take(8).Select(p =>
-            $"{Fmt.Gb(p.First.Size),9}  {p.Second?.Format ?? "?",-12} {Fmt.Residency(p.First.Residency),-12} {Fmt.ShortPath(p.First.Path)}"))
+            $"{Fmt.Gb(p.First.Size),9}  {p.Second?.Format ?? "?",-12} {Fmt.Residency(p.First.Residency),-12} {Fmt.ShortPath(p.First.Path)}"
+            + (m.RollbackShas.Contains(p.First.Sha256) ? "  · " + Loc.T("models.rollback_tag") : "")))
             + (m.Files.Count > 8 ? "\n" + Loc.T("models.more_files", m.Files.Count - 8) : "");
         OpenButton.IsEnabled = System.IO.Directory.Exists(m.Folder);
     }
@@ -159,11 +172,18 @@ public partial class ModelsView : UserControl, IRefreshable
     /// <summary>Models with no file used for this many days count as unused.</summary>
     private const int UnusedDays = 90;
 
+    /// <summary>Position of the "Ollama rollback copies" filter.</summary>
+    private const int RollbackFilter = 8;
+
+    private void OnShowRollback(object sender, RoutedEventArgs e) => Filter.SelectedIndex = RollbackFilter;
+
     /// <summary>Opens the detailed plan for the files of the unused models still on disk (the gate
     /// still decides, file by file, what may leave).</summary>
     private void OnFreeUnused(object sender, RoutedEventArgs e)
     {
-        var files = Grid.Items.Cast<Row>().SelectMany(r => r.Model.Files).Where(f => f.Residency == Residency.Local).ToList();
+        var files = Grid.Items.Cast<Row>()
+            .SelectMany(r => Filter.SelectedIndex == RollbackFilter ? r.Model.RollbackFiles : r.Model.Files)
+            .Where(f => f.Residency == Residency.Local).ToList();
         PlanWindow.ShowFor((MainWindow)Window.GetWindow(this), files);
     }
 

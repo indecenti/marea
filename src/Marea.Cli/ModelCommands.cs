@@ -11,9 +11,13 @@ internal static class ModelCommands
     };
 
     /// <summary>Lists every model in the ledger with format, precision, size, residency and safety.</summary>
-    public static int Models(MareaEngine engine, bool json, int? unusedDays = null)
+    public static int Models(MareaEngine engine, bool json, int? unusedDays = null, bool rollbackOnly = false)
     {
         var models = engine.Models();
+        if (rollbackOnly)
+        {
+            models = models.Where(m => m.RollbackFiles.Count > 0).ToList();
+        }
         if (unusedDays is int days)
         {
             models = models.Where(m => m.UnusedFor(days, DateTime.UtcNow)).ToList();
@@ -37,6 +41,7 @@ internal static class ModelCommands
                     lastUsed = m.LastUsedUtc,
                     safety = m.Safety,
                     hubScan = m.HubScan,
+                    rollbackBytes = m.RollbackFiles.Sum(f => f.Size),
                     findings = m.Findings,
                     files = m.Files.Zip(m.Meta).Select(p => new
                     {
@@ -47,6 +52,7 @@ internal static class ModelCommands
                         residency = p.First.Residency,
                         format = p.Second?.Format,
                         safety = p.Second?.Safety,
+                        ollamaRollback = m.RollbackShas.Contains(p.First.Sha256),
                     }),
                 }),
             });
@@ -58,6 +64,11 @@ internal static class ModelCommands
                 + $"{CliOutput.Params(m.Parameters),8}  {Loc.T("safety." + Key(m.Safety)),-22} {CliOutput.Clean(m.Name)}");
         }
         Console.WriteLine(Loc.T("cli.models_total", models.Count, CliOutput.Gb(models.Sum(m => m.Size))));
+        var rollback = models.SelectMany(m => m.RollbackFiles).Where(f => f.Residency == Residency.Local).ToList();
+        if (rollback.Count > 0)
+        {
+            Console.WriteLine(Loc.T("cli.rollback_total", rollback.Count, CliOutput.Gb(rollback.Sum(f => f.Size))));
+        }
         return Exit.Ok;
     }
 

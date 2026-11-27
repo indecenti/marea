@@ -70,9 +70,9 @@ public sealed partial class OllamaRegistry : IDisposable
                 continue;
             }
             var repo = string.Join('/', parts[1..^1]);
-            if (!OllamaBlob.RepoPath().IsMatch(repo))
+            if (!OllamaBlob.RepoPath().IsMatch(repo) || OllamaLayout.IsShadow(parts[0], repo, parts[^1]))
             {
-                continue;
+                continue; // a shadow tag lists weights Ollama converted on this PC: no registry has them
             }
             try
             {
@@ -84,6 +84,10 @@ public sealed partial class OllamaRegistry : IDisposable
                 }
                 foreach (var layer in layers)
                 {
+                    if (OllamaLayout.IsManifestLayer(layer.TryGetProperty("mediaType", out var mt) ? mt.GetString() : null))
+                    {
+                        continue;
+                    }
                     var digest = layer.GetProperty("digest").GetString() ?? "";
                     var hex = digest.StartsWith("sha256:", StringComparison.Ordinal) ? digest[7..] : "";
                     if (OllamaBlob.Hex64().IsMatch(hex))

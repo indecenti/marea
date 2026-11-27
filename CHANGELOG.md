@@ -6,6 +6,24 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-11-27
+
+### Added
+- **Ollama rollback copies.** Ollama 0.40 converted some GGUF models on the PC and kept the original
+  next to the converted copy, only for a downgrade, so those models take about twice their size.
+  Marea reads Ollama's manifest lists, finds the originals no current runner or other tag uses, and
+  shows them on the Models page (*Ollama keeps N GB only for going back*, filter *Ollama rollback
+  copies*, **Free rollback copies…**). Freeing never deletes: an older Ollama reading the file gets it
+  back from the registry, verified by digest. CLI: `mareactl models --rollback`,
+  `mareactl free --rollback --yes`; `rollbackBytes` and `ollamaRollback` in `marea.models/1`.
+
+### Fixed
+- Converted Ollama models are named after the tag you pulled (`qwen3.5:9b`), not after Ollama's
+  hidden `llamacpp:<digest>` tag; projector and draft layers are grouped with their model.
+- Weights Ollama converted on the PC are no longer treated as available from the registry under
+  the hidden tag: they have no public source and are never freed. (Evaporation already re-checked
+  the source live and kept them, but the plan and totals counted them as freeable.)
+
 ## [0.6.1] - 2026-11-27
 
 ### Changed

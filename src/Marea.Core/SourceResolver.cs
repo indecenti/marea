@@ -2,7 +2,9 @@ namespace Marea.Core;
 
 /// <summary>Finds and records where each content can be obtained from, then classifies files.
 /// Every source is a proof (equal sha256, or a recipe that rebuilt the exact bytes).</summary>
-public sealed class SourceResolver(Ledger ledger, MareaSettings settings, HuggingFaceClient hub)
+/// <remarks><paramref name="ollama"/> confirms blobs that Ollama's migration listed only in child manifests;
+/// without it those blobs get no source (the safe answer).</remarks>
+public sealed class SourceResolver(Ledger ledger, MareaSettings settings, HuggingFaceClient hub, OllamaRegistry? ollama = null)
 {
     /// <summary>Refreshes Hub matches, mirror presence and recipes, then reclassifies every file.</summary>
     public async Task RefreshAsync(IProgress<ScanProgress>? progress = null, CancellationToken ct = default)
@@ -40,10 +42,7 @@ public sealed class SourceResolver(Ledger ledger, MareaSettings settings, Huggin
 
         if (settings.OllamaSource)
         {
-            foreach (var blob in OllamaRegistry.ReadManifests(OllamaRegistry.DefaultModelsDir).Where(b => shas.Contains(b.Sha256)))
-            {
-                ledger.PutSource(new Source(blob.Sha256, SourceKind.Ollama, blob.Locator, blob.Size, DateTime.UtcNow));
-            }
+            await RefreshOllamaAsync(files, shas, ct);
         }
 
         if (settings.MirrorRoot is { Length: > 0 } mirrorRoot && Directory.Exists(mirrorRoot))
@@ -61,6 +60,44 @@ public sealed class SourceResolver(Ledger ledger, MareaSettings settings, Huggin
         {
             (f.Class, f.SourceLabel) = Classify(f);
             ledger.Upsert(f);
+        }
+    }
+
+    /// <summary>Records registry sources for Ollama blobs. Blobs found only in a migrated model's child
+    /// manifests may have been converted on this PC, so each is confirmed on the registry first.</summary>
+    private async Task RefreshOllamaAsync(List<FileRecord> files, HashSet<string> shas, CancellationToken ct)
+    {
+        foreach (var f in files)
+        {
+            // Earlier versions took Ollama's hidden "llamacpp:<digest>" tag for a registry repository.
+            foreach (var s in ledger.SourcesOf(f.Sha256).Where(s => s.Kind == SourceKind.Ollama
+                         && s.Locator.StartsWith("registry.ollama.ai/library/llamacpp@", StringComparison.Ordinal)))
+            {
+                ledger.DropSource(s);
+            }
+        }
+        var listed = OllamaRegistry.ReadManifests(OllamaRegistry.DefaultModelsDir).Where(b => shas.Contains(b.Sha256)).ToList();
+        foreach (var blob in listed)
+        {
+            ledger.PutSource(new Source(blob.Sha256, SourceKind.Ollama, blob.Locator, blob.Size, DateTime.UtcNow));
+        }
+        if (ollama is null)
+        {
+            return;
+        }
+        var known = listed.Select(b => b.Sha256).ToHashSet(StringComparer.Ordinal);
+        foreach (var (hex, child) in OllamaLayout.Read(OllamaRegistry.DefaultModelsDir).Children)
+        {
+            if (!shas.Contains(hex) || known.Contains(hex) || child.Parent.Host is not ("registry.ollama.ai" or "hf.co")
+                || !OllamaBlob.RepoPath().IsMatch(child.Parent.Repository))
+            {
+                continue;
+            }
+            var blob = new OllamaBlob(child.Parent.Host, child.Parent.Repository, hex, child.Size);
+            if (await ollama.VerifyAsync(blob, ct))
+            {
+                ledger.PutSource(new Source(hex, SourceKind.Ollama, blob.Locator, blob.Size, DateTime.UtcNow));
+            }
         }
     }
 

@@ -31,7 +31,7 @@
       "name": "Marea",
       "applicationCategory": "UtilitiesApplication",
       "operatingSystem": "Windows 10, Windows 11 (model safety check also on macOS and Linux)",
-      "softwareVersion": "0.6.0",
+      "softwareVersion": "0.7.0",
       "license": "https://opensource.org/licenses/MIT",
       "isAccessibleForFree": true,
       "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" },
@@ -79,6 +79,11 @@
           "@type": "Question",
           "name": "Can I lose a file?",
           "acceptedAnswer": { "@type": "Answer", "text": "Marea is designed so that you can't: it only evaporates files with a verified source that survives the operation, re-hashes every byte that comes back, never detaches a folder holding placeholders, and never touches unique files." }
+        },
+        {
+          "@type": "Question",
+          "name": "Why did Ollama 0.40 double the size of my models, and how do I get the space back?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Ollama 0.40 converted some GGUF models on your PC and kept the original next to the converted copy, only so you could go back to an older Ollama; you may also see hidden llamacpp:<digest> entries. Marea finds these rollback copies and frees them without deleting them: if you ever downgrade, the original returns from the Ollama registry, verified by digest. Use the Models page or mareactl free --rollback --yes." }
         },
         {
           "@type": "Question",
@@ -210,6 +215,7 @@ $env:MAREA_READONLY = "1"; mareactl models --json  # inventory, no changes possi
     <details><summary>What if a model is removed from Hugging Face or Ollama?</summary><p>Marea checks its sources every day and catches early signs. Files at risk are brought back while the source still answers; possible last copies are kept and copied to your NAS.</p></details>
     <details><summary>Can I lose a file?</summary><p>No by design: only files with a verified source that survives the operation are evaporated, every byte that comes back is re-hashed, and unique files are never touched. Read the <a href="https://github.com/indecenti/marea/blob/main/SECURITY.md">security model</a>.</p></details>
     <details><summary>What does Marea send over the network?</summary><p>No telemetry and never your paths or file contents. Only public repository names, public digests and an update check, each of which can be turned off. Details in the <a href="https://github.com/indecenti/marea/blob/main/CODE_SIGNING_POLICY.md#privacy-policy">privacy policy</a>.</p></details>
+    <details><summary>Why did Ollama 0.40 double the size of my models, and how do I get the space back?</summary><p>Ollama 0.40 converted some GGUF models on your PC and kept the original next to the converted copy, only so you could go back to an older Ollama; you may also see hidden llamacpp:&lt;digest&gt; entries. Marea finds these rollback copies and frees them without deleting them: if you ever downgrade, the original returns from the Ollama registry, verified by digest. Use the Models page or <code>mareactl free --rollback --yes</code>.</p></details>
     <details><summary>Does it work on macOS or Linux?</summary><p>The model safety check does: download <code>marea-check</code> for macOS or Linux. Freeing space does not yet: it uses the Windows Cloud Files API. The engine is portable .NET, and macOS (File Provider) and Linux (FUSE) backends are on the roadmap. Contributions welcome.</p></details>
   </section>
 </main>

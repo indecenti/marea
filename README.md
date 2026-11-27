@@ -56,6 +56,7 @@ Marea is for you if you have searched for any of these:
 | **Hugging Face cache too big** (`.cache/huggingface/hub`, `hf cache` shows hundreds of GB) | Matches cached files to their pinned Hub commit; they come back on demand, verified |
 | **LM Studio, Jan, GPT4All models filling the disk** | Finds their model folders on first run, next to ComfyUI, Hugging Face and Ollama ones |
 | **Ollama models take too much space** (`.ollama/models/blobs`) | Names every blob by its tag, frees the ones the registry still serves by digest |
+| **Ollama 0.40 doubled my models** (`llamacpp:<digest>` entries, original + converted copy) | Finds the original copies Ollama keeps only for a downgrade and frees them; if you ever go back, they return from the registry |
 | **ComfyUI models folder is huge**, same checkpoint in A1111, Forge and ComfyUI | Finds byte-identical duplicates across apps and drives; files stay where each app expects them |
 | **fp32 and fp16/bf16 copies of the same model** | Recomputes bf16 from fp32 bit for bit when needed, so only one copy uses space |
 | **"Is this .ckpt / .pt / .bin safe to load?"**, pickle malware, unsafe models | Reads the pickle opcodes and GGUF chat templates without loading anything and gives a calm verdict |
@@ -423,6 +424,14 @@ Files you used recently are never evaporated.
 **What about Ollama, LM Studio, pip caches?**
 Ollama is supported: add `.ollama\models\blobs` (the first-run guide proposes it) and its blobs
 come back from the Ollama registry, verified by digest. If you don't use Ollama, nothing changes.
+
+**Ollama 0.40 made my models take twice the space. Can Marea help?**
+Yes. The 0.40 update converted some GGUF models on your PC and kept the original next to the
+converted copy, so you could go back to an older Ollama (you may also have seen hidden
+`llamacpp:<digest>` models in `ollama list`). The Models page shows how much those **rollback
+copies** take, and **Free rollback copies** gives the space back. Nothing is deleted: if you ever
+install an older Ollama, the original returns on its own from the Ollama registry, verified by
+digest. The converted copy Ollama uses today stays on disk, because no registry has it.
 Package caches are better cleaned by their own tools.
 
 **macOS / Linux?**
@@ -445,10 +454,10 @@ the folder (portable). Either way every file comes back first.
 - [x] Fluent design with icons, light and dark theme, accessible controls
 - [x] Models inventory (GGUF, safetensors, PyTorch, Ollama, Hugging Face cache) and load-safety check
 - [x] Agent-ready CLI: versioned JSON, exit codes, read-only mode
-- [ ] Ollama update backups: give the space back without losing the rollback
 - [x] Endangered-model watch: early warnings, automatic rescue, last copies protected
 - [x] Share card, unused-models filter, mass-read protection with per-program blocking
 - [x] `marea-check` for macOS and Linux; LM Studio, Jan and GPT4All folders; Hugging Face scan results
+- [x] Ollama rollback copies: give the space back without losing the rollback
 - [ ] Cross-app sharing: one copy for ComfyUI, Forge, LM Studio and Ollama, without symlinks
 - [ ] Signed releases, MSI installer, winget
 - [ ] Civitai source (by hash)

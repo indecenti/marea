@@ -44,7 +44,13 @@ public sealed class ModelEntry
     /// <summary>What Hugging Face's scanners say about its files: the worst level, or null when unknown.</summary>
     public string? HubScan { get; init; }
 
+    /// <summary>Content hashes Ollama keeps only to go back to an older version of itself.</summary>
+    public IReadOnlySet<string> RollbackShas { get; init; } = new HashSet<string>();
+
     private bool HubFlagged => HubScan is not (null or "clean");
+
+    /// <summary>Files Ollama keeps only for a downgrade (see <see cref="OllamaLayout"/>).</summary>
+    public List<FileRecord> RollbackFiles => Files.Where(f => RollbackShas.Contains(f.Sha256)).ToList();
 
     /// <summary>False when every file was inspected and none is a model (datasets, archives...).</summary>
     public bool IsModel => Meta.Any(m => m is null || m.Format != "data");
@@ -107,6 +113,9 @@ public static partial class ModelCatalog
     {
         folderHasFile ??= (dir, name) => File.Exists(Path.Combine(dir, name));
         var ollama = new Dictionary<string, Dictionary<string, List<string>>>(StringComparer.OrdinalIgnoreCase);
+        var layouts = new Dictionary<string, OllamaLayout>(StringComparer.OrdinalIgnoreCase);
+        IReadOnlySet<string> Rollback(string modelsDir) =>
+            (layouts.TryGetValue(modelsDir, out var l) ? l : layouts[modelsDir] = OllamaLayout.Read(modelsDir)).Rollback;
         var groups = new Dictionary<string, (string Name, ModelKind Kind, string Folder, List<FileRecord> Files)>(StringComparer.OrdinalIgnoreCase);
         foreach (var f in files)
         {
@@ -129,6 +138,7 @@ public static partial class ModelCatalog
                 Files = list,
                 Meta = list.Select(f => meta.GetValueOrDefault(f.Sha256)).ToList(),
                 HubScan = WorstScan(list.Select(f => hubScans?.GetValueOrDefault(f.Sha256))),
+                RollbackShas = kv.Value.Kind == ModelKind.Ollama ? Rollback(kv.Value.Folder) : OllamaLayout.Empty.Rollback,
             };
         }).OrderByDescending(m => m.Size).ToList();
     }

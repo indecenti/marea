@@ -91,7 +91,7 @@ public sealed partial class MareaEngine : IDisposable
 
     /// <summary>Looks for sources (Hub, mirror, recipes) and reclassifies.</summary>
     public Task RefreshSourcesAsync(IProgress<ScanProgress>? progress = null, CancellationToken ct = default) =>
-        new SourceResolver(Ledger, Settings, _hub).RefreshAsync(progress, ct);
+        new SourceResolver(Ledger, Settings, _hub, _ollama).RefreshAsync(progress, ct);
 
     /// <summary>Verdict for every local file.</summary>
     public List<GateVerdict> Evaluate() => _gate.EvaluateAll(DateTime.UtcNow);
@@ -99,6 +99,10 @@ public sealed partial class MareaEngine : IDisposable
     /// <summary>The tide's plan to free <paramref name="bytes"/> (everything allowed when 0).</summary>
     public List<PlanItem> Plan(long bytes, bool instantOnly = false) =>
         new TidePlanner(_gate, Ledger).Plan(bytes, DateTime.UtcNow, instantOnly);
+
+    /// <summary>Ollama rollback copies still on disk (see <see cref="OllamaLayout"/>).</summary>
+    public List<FileRecord> OllamaRollbackFiles() =>
+        Models().SelectMany(m => m.RollbackFiles).Where(f => f.Residency == Residency.Local).DistinctBy(f => f.Path).ToList();
 
     /// <summary>What the quick wizard can offer right now: bytes that come back instantly
     /// (local copy or recipe, offline) and bytes including mirror / download sources.</summary>

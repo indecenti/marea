@@ -482,6 +482,13 @@ T = {
 "models.free_unused": ("Libera questi…", "Free these…", "Liberar estos…", "Libérer ceux-ci…", "Diese freigeben…"),
 "ov.attention": ("Richiede la tua attenzione", "Needs your attention", "Requiere tu atención", "Demande votre attention", "Braucht deine Aufmerksamkeit"),
 "set.lang_auto_named": ("Automatica, come Windows ({0})", "Automatic, as Windows ({0})", "Automático, como Windows ({0})", "Automatique, comme Windows ({0})", "Automatisch, wie Windows ({0})"),
+"models.filter_rollback": ("Copie di rollback di Ollama", "Ollama rollback copies", "Copias de reversión de Ollama", "Copies de retour arrière d'Ollama", "Ollama-Rollback-Kopien"),
+"models.rollback_chip": ("Ollama tiene {0} solo per tornare indietro", "Ollama keeps {0} only for going back", "Ollama guarda {0} solo para volver atrás", "Ollama garde {0} juste pour revenir en arrière", "Ollama behält {0} nur fürs Zurückgehen"),
+"models.rollback_chip_tip": ("Mostra le copie che Ollama ha tenuto dopo l'aggiornamento 0.40", "Show the copies Ollama kept after its 0.40 update", "Mostrar las copias que Ollama guardó tras su actualización 0.40", "Afficher les copies gardées par Ollama après sa mise à jour 0.40", "Die Kopien zeigen, die Ollama nach dem Update auf 0.40 behalten hat"),
+"models.free_rollback": ("Libera le copie di rollback…", "Free rollback copies…", "Liberar las copias de reversión…", "Libérer les copies de retour arrière…", "Rollback-Kopien freigeben…"),
+"models.rollback_help": ("{0} di questo modello sono l'originale che Ollama tiene solo per poter tornare a una sua versione precedente: oggi usa la copia convertita. Marea può liberarli senza cancellarli. Se un giorno torni indietro, rientrano da soli dal registro di Ollama.", "{0} of this model is the original Ollama keeps only so you can go back to an older Ollama: today it uses the converted copy. Marea can free it without deleting it. If you ever go back, it returns on its own from the Ollama registry.", "{0} de este modelo son el original que Ollama guarda solo para poder volver a una versión anterior: hoy usa la copia convertida. Marea puede liberarlos sin borrarlos. Si algún día vuelves atrás, regresan solos desde el registro de Ollama.", "{0} de ce modèle sont l'original qu'Ollama garde seulement pour revenir à une version antérieure : aujourd'hui il utilise la copie convertie. Marea peut les libérer sans les supprimer. Si un jour vous revenez en arrière, ils reviennent seuls depuis le registre d'Ollama.", "{0} dieses Modells sind das Original, das Ollama nur für die Rückkehr zu einer älteren Version behält: Heute nutzt es die umgewandelte Kopie. Marea kann sie freigeben, ohne sie zu löschen. Gehst du je zurück, kommen sie von selbst aus der Ollama-Registry zurück."),
+"models.rollback_tag": ("copia di rollback", "rollback copy", "copia de reversión", "copie de retour arrière", "Rollback-Kopie"),
+"cli.rollback_total": ("Copie di rollback di Ollama: {0} file, {1}. Liberale con: mareactl free --rollback --yes", "Ollama rollback copies: {0} files, {1}. Free them with: mareactl free --rollback --yes", "Copias de reversión de Ollama: {0} archivos, {1}. Libéralas con: mareactl free --rollback --yes", "Copies de retour arrière d'Ollama : {0} fichiers, {1}. Libérez-les avec : mareactl free --rollback --yes", "Ollama-Rollback-Kopien: {0} Dateien, {1}. Freigeben mit: mareactl free --rollback --yes"),
 }
 
 HELP = {
@@ -489,10 +496,10 @@ HELP = {
 mareactl add <cartella>                             gestisci una cartella (es. ...\\checkpoints)
 mareactl remove <cartella>                          riporta tutto e smetti di gestirla
 mareactl scan [--json]                              impronte, fonti, classi, analisi dei modelli
-mareactl models [--unused N] [--json]               tutti i modelli: formato, precisione, sicurezza
+mareactl models [--unused N|--rollback] [--json]    tutti i modelli; --rollback: copie che Ollama tiene solo per tornare indietro
 mareactl check <file|cartella>... [--json]          controlla file o cartelle prima di caricarli (non serve il registro)
 mareactl watch [--no-rescue] [--json]               controlla le fonti pubbliche, salva i modelli a rischio
-mareactl free [--gb N|--all] [--instant] --yes      libera spazio in fretta (annullabile)
+mareactl free [--gb N|--all|--rollback] [--instant] --yes libera spazio in fretta (annullabile)
 mareactl undo                                       annulla l'ultima liberazione
 mareactl plan [--gb N] [--json]                     cosa evaporerebbe la marea (senza toccare nulla)
 mareactl evaporate [--gb N] --yes                   evapora secondo il piano
@@ -509,10 +516,10 @@ Uscita: 0 ok, 1 errore, 2 serve conferma, 3 da controllare, 4 pericoloso, 5 sola
 mareactl add <folder>                               manage a folder (e.g. ...\\checkpoints)
 mareactl remove <folder>                            bring everything back and stop managing it
 mareactl scan [--json]                              fingerprints, sources, classes, model inspection
-mareactl models [--unused N] [--json]               every model: format, precision, safety
+mareactl models [--unused N|--rollback] [--json]    every model; --rollback: copies Ollama keeps only for going back
 mareactl check <file|folder>... [--json]            check files or folders before loading them (no ledger needed)
 mareactl watch [--no-rescue] [--json]               check public sources, rescue models at risk
-mareactl free [--gb N|--all] [--instant] --yes      free space quickly (undoable)
+mareactl free [--gb N|--all|--rollback] [--instant] --yes free space quickly (undoable)
 mareactl undo                                       undo the last cleanup
 mareactl plan [--gb N] [--json]                     what the tide would evaporate (touches nothing)
 mareactl evaporate [--gb N] --yes                   evaporate according to the plan
@@ -529,10 +536,10 @@ Exit codes: 0 ok, 1 error, 2 needs confirmation, 3 check before loading, 4 dange
 mareactl add <carpeta>                              gestionar una carpeta (p. ej. ...\\checkpoints)
 mareactl remove <carpeta>                           traer todo de vuelta y dejar de gestionarla
 mareactl scan [--json]                              huellas, fuentes, clases, análisis de modelos
-mareactl models [--unused N] [--json]               todos los modelos: formato, precisión, seguridad
+mareactl models [--unused N|--rollback] [--json]    todos los modelos; --rollback: copias que Ollama guarda solo para volver atrás
 mareactl check <archivo|carpeta>... [--json]        revisar archivos o carpetas antes de cargarlos (sin registro)
 mareactl watch [--no-rescue] [--json]               revisar fuentes públicas, rescatar modelos en riesgo
-mareactl free [--gb N|--all] [--instant] --yes      liberar espacio rápido (se puede deshacer)
+mareactl free [--gb N|--all|--rollback] [--instant] --yes liberar espacio rápido (se puede deshacer)
 mareactl undo                                       deshacer la última liberación
 mareactl plan [--gb N] [--json]                     qué evaporaría la marea (no toca nada)
 mareactl evaporate [--gb N] --yes                   evaporar según el plan
@@ -549,10 +556,10 @@ Códigos de salida: 0 ok, 1 error, 2 requiere confirmación, 3 revisar, 4 peligr
 mareactl add <dossier>                              gérer un dossier (p. ex. ...\\checkpoints)
 mareactl remove <dossier>                           tout ramener et ne plus le gérer
 mareactl scan [--json]                              empreintes, sources, classes, analyse des modèles
-mareactl models [--unused N] [--json]               tous les modèles : format, précision, sécurité
+mareactl models [--unused N|--rollback] [--json]    tous les modèles ; --rollback : copies gardées par Ollama pour revenir en arrière
 mareactl check <fichier|dossier>... [--json]        vérifier des fichiers ou dossiers avant de les charger (sans registre)
 mareactl watch [--no-rescue] [--json]               vérifier les sources publiques, sauver les modèles menacés
-mareactl free [--gb N|--all] [--instant] --yes      libérer de l'espace vite (annulable)
+mareactl free [--gb N|--all|--rollback] [--instant] --yes libérer de l'espace vite (annulable)
 mareactl undo                                       annuler la dernière libération
 mareactl plan [--gb N] [--json]                     ce que la marée évaporerait (ne touche à rien)
 mareactl evaporate [--gb N] --yes                   évaporer selon le plan
@@ -569,10 +576,10 @@ Codes de sortie : 0 ok, 1 erreur, 2 confirmation requise, 3 à vérifier, 4 dang
 mareactl add <Ordner>                               einen Ordner verwalten (z. B. ...\\checkpoints)
 mareactl remove <Ordner>                            alles zurückholen und nicht mehr verwalten
 mareactl scan [--json]                              Fingerabdrücke, Quellen, Klassen, Modellprüfung
-mareactl models [--unused N] [--json]               alle Modelle: Format, Genauigkeit, Sicherheit
+mareactl models [--unused N|--rollback] [--json]    alle Modelle; --rollback: Kopien, die Ollama nur fürs Zurückgehen behält
 mareactl check <Datei|Ordner>... [--json]           Dateien oder Ordner vor dem Laden prüfen (ohne Register)
 mareactl watch [--no-rescue] [--json]               öffentliche Quellen prüfen, gefährdete Modelle retten
-mareactl free [--gb N|--all] [--instant] --yes      schnell Speicher freigeben (rückgängig machbar)
+mareactl free [--gb N|--all|--rollback] [--instant] --yes schnell Speicher freigeben (rückgängig machbar)
 mareactl undo                                       letzte Freigabe rückgängig machen
 mareactl plan [--gb N] [--json]                     was die Flut verdunsten würde (ändert nichts)
 mareactl evaporate [--gb N] --yes                   nach Plan verdunsten

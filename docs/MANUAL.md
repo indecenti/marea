@@ -1,6 +1,6 @@
 # Marea — User manual
 
-Version 0.6 · Windows 10 1809+ / Windows 11 · English
+Version 0.7 · Windows 10 1809+ / Windows 11 · English
 ([Italiano](i18n/README.it.md) · [Español](i18n/README.es.md) · [Français](i18n/README.fr.md) · [Deutsch](i18n/README.de.md))
 
 1. [What Marea does](#1-what-marea-does)
@@ -218,6 +218,19 @@ The filter **Not used in 90 days** lists the models none of whose files has been
 the last 90 days. **Free these…** opens the detailed plan for their files still on disk: you choose,
 and the safety gate still decides file by file what may leave.
 
+### Ollama rollback copies
+
+Ollama 0.40 converted some GGUF models on your PC so its new engine can load them, and kept the
+original file next to the converted one, only so that you could go back to an older Ollama. Each
+of those models then takes about twice its size.
+
+When Marea finds such copies, the Models page shows a button like *Ollama keeps 6.6 GB only for
+going back*. It opens the filter **Ollama rollback copies**; select a model to read which file is the
+copy, then press **Free rollback copies…** to see the plan. Only the original copies leave, never the
+converted file Ollama uses today, and the safety gate still decides file by file. If you ever
+install an older Ollama, the original returns by itself from the Ollama registry, verified by
+digest. From the command line: `mareactl models --rollback`, then `mareactl free --rollback --yes`.
+
 **Check sources** on the Models page runs the check now. Both the daily check and the automatic
 rescue can be turned off in *Settings → Sources*.
 
@@ -333,11 +346,11 @@ into the current language. Run `mareactl journal 50` to copy it into a bug repor
 mareactl status [--json]                          disk and ledger status
 mareactl add <folder>                             manage a folder
 mareactl scan                                     fingerprints, sources, classes, model headers
-mareactl models [--unused N] [--json]             every model, or those unused for N days
+mareactl models [--unused N|--rollback] [--json]  every model, unused ones, or Ollama rollback copies
 mareactl check <file|folder>... [--json]          safety check before loading (no setup needed)
 mareactl watch [--no-rescue] [--json]            check public sources, rescue models at risk
 mareactl plan [--gb N] [--instant] [--json]       what would evaporate (touches nothing)
-mareactl free [--gb N|--all] [--instant] --yes    quick cleanup, undoable
+mareactl free [--gb N|--all|--rollback] [--instant] --yes   quick cleanup, undoable
 mareactl undo                                     undo the last cleanup
 mareactl evaporate [<file>] [--gb N] --yes        evaporate per plan, or one file
 mareactl restore <file>                           bring one file back now

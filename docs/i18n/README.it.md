@@ -66,6 +66,10 @@ trovato*, *Da controllare* (import insoliti, codice TorchScript, template di cha
 uscire dalla sandbox) o *Pericoloso*. Per controllare un modello appena scaricato:
 `mareactl check <file o cartella>`.
 
+## Novità della 0.7
+
+Ollama 0.40 ha convertito alcuni modelli GGUF e ha tenuto anche l'originale, solo per poter tornare a una versione precedente: quei modelli occupano il doppio. Marea ora trova queste **copie di rollback** e le libera senza cancellarle: se un giorno torni a un Ollama più vecchio, l'originale rientra da solo dal registro di Ollama.
+
 ## Novità della 0.6
 
 Il controllo di sicurezza dei modelli ora funziona anche su **macOS e Linux**: scarica `marea-check` dalle Release (stessi verdetti, JSON e codici di uscita di `mareactl check`). Al primo avvio Marea trova anche le cartelle di **LM Studio, Jan e GPT4All**, e per i file presi da Hugging Face mostra cosa dicono **gli scanner di sicurezza di Hugging Face**.

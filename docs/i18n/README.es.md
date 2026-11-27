@@ -64,6 +64,10 @@ lee sus instrucciones **sin ejecutarlas** y da un veredicto sereno: *Formato seg
 intentan salir de su sandbox) o *Peligroso*. Para revisar un modelo recién descargado:
 `mareactl check <archivo o carpeta>`.
 
+## Novedades de la 0.7
+
+Ollama 0.40 convirtió algunos modelos GGUF y guardó también el original, solo para poder volver a una versión anterior: esos modelos ocupan el doble. Marea ahora encuentra estas **copias de reversión** y las libera sin borrarlas: si algún día vuelves a un Ollama más antiguo, el original regresa solo desde el registro de Ollama.
+
 ## Novedades de la 0.6
 
 La revisión de seguridad de modelos ahora funciona también en **macOS y Linux**: descarga `marea-check` desde Releases (mismos veredictos, JSON y códigos de salida que `mareactl check`). En el primer inicio Marea encuentra también las carpetas de **LM Studio, Jan y GPT4All**, y para los archivos de Hugging Face muestra lo que dicen **los escáneres de seguridad de Hugging Face**.
