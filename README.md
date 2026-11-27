@@ -325,6 +325,16 @@ On a real workstation (ACE-Step and Side-Step checkpoints, Windows 11, NVMe):
 | Open an evaporated 4.5 GB duplicate | back in ~5 s, **SHA-256 identical** |
 | Undo the cleanup | every file ordinary again, folders detached |
 
+On Linux (Ubuntu 24.04, kernel 6.18, RTX 5070 Laptop), with the real tools:
+
+| Step | Result |
+|---|---|
+| Hugging Face cache made by `huggingface_hub` 2.5 (`all-MiniLM-L6-v2`), freed | 90 MB to 8 KB; named after its repo |
+| Load it with `hf_hub_download` + `safetensors`, also with `HF_HUB_OFFLINE=1` | refilled from huggingface.co in 4.3 s, **SHA-256 identical** |
+| Ollama 0.40.18 on the GPU, `smollm2:135m` loaded | `llama-server` maps the file: **kept** ("in use"), the model keeps answering |
+| Same model unloaded, freed, then `ollama run` | refilled from registry.ollama.ai, right answer, **digest identical** |
+| Ollama on the CPU, model loaded | read into memory and closed: freeing it is safe, answers unchanged |
+
 ## Install
 
 > **Pre-release.** Builds are not code-signed yet, so Windows SmartScreen may warn on first run
