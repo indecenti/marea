@@ -6,6 +6,11 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+- Portuguese (Português, `pt`) for the app and `mareactl`, selectable in *Settings* or with
+  `MAREA_LANG=pt`, and picked automatically when Portuguese (pt-BR or pt-PT) is among the Windows
+  preferred languages.
+
 ## [0.8.1] - 2026-11-27
 
 ### Fixed

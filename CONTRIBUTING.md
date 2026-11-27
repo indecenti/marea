@@ -19,7 +19,7 @@ real Windows cloud filter driver on temporary folders and clean up after themsel
 - **Safety first.** Any change to evaporation, hydration or folder registration needs a test
   that fails without it. Read [SECURITY.md](SECURITY.md) before touching `Marea.Core`.
 - **One problem per pull request**, small and reviewable.
-- **Translations**: user-facing text lives in `tools/i18n_table.py` (it, en, es, fr, de).
+- **Translations**: user-facing text lives in `tools/i18n_table.py` (it, en, es, fr, de, pt).
   Run `python tools/i18n_table.py`; `LocalizationTests` fail if a key or placeholder is missing.
 - **No telemetry, no new network destinations** without discussion in an issue first.
 - Code style: see `.editorconfig`; public members have XML doc comments.

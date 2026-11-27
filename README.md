@@ -411,9 +411,9 @@ verified. Keep Marea running; it offers to start with Windows.
   </tr>
 </table>
 
-The app speaks English, Italiano, Español, Français and Deutsch, follows the Windows light or
-dark theme (or the one you pick in *Settings*), and every control has an accessible name for
-screen readers.
+The app speaks English, Italiano, Español, Français, Deutsch and Português, follows the Windows
+light or dark theme (or the one you pick in *Settings*), and every control has an accessible name
+for screen readers.
 
 ## Command line
 
@@ -440,7 +440,7 @@ mareactl service install|uninstall               Linux: install the agent as a s
 ```
 
 Read commands accept `--json`. Environment: `MAREA_DATA` (data folder), `MAREA_LANG` (`en`, `it`,
-`es`, `fr`, `de`), `MAREA_READONLY=1` (refuse every change). Exit codes and JSON schemas:
+`es`, `fr`, `de`, `pt`), `MAREA_READONLY=1` (refuse every change). Exit codes and JSON schemas:
 [docs/AGENTS.md](docs/AGENTS.md).
 
 ## FAQ
@@ -497,7 +497,7 @@ comes back first.
 
 - [x] Provenance ledger, duplicates, Hugging Face sources, NAS mirror, bf16 ← fp32 recipes
 - [x] Transparent evaporation and verified return (Windows Cloud Files)
-- [x] Tide planner, desktop app, `mareactl`, 5 languages, portable build
+- [x] Tide planner, desktop app, `mareactl`, 6 languages, portable build
 - [x] "Free up space in 3 clicks" wizard with instant-only mode and one-click undo
 - [x] Automatic source discovery, Ollama source, update notifications, attested CI releases
 - [x] Fluent design with icons, light and dark theme, accessible controls

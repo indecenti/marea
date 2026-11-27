@@ -293,7 +293,7 @@ Every screenshot in this manual uses the light theme; the dark theme looks like 
 
 | Setting | Default | Meaning |
 |---|---|---|
-| Language | Automatic, as Windows | English, Italiano, Español, Français, Deutsch. *Automatic* takes the first of your Windows preferred languages that Marea speaks, otherwise English, and shows which one it picked |
+| Language | Automatic, as Windows | English, Italiano, Español, Français, Deutsch, Português. *Automatic* takes the first of your Windows preferred languages that Marea speaks, otherwise English, and shows which one it picked |
 | Theme | Follow Windows | Light, dark, or the Windows setting. Changes as soon as you pick it |
 | Automatic cleanup | **Off** | Every 10 minutes, if free space is below the target, Marea frees on its own the files that are easiest to get back |
 | Free space to keep | 100 GB | The target of automatic cleanup |
@@ -366,7 +366,7 @@ Every command that changes something shows the plan first and does nothing witho
 `MAREA_READONLY=1` refuses every change (exit code 5). The full contract, with exit codes and
 JSON schemas, is in [AGENTS.md](AGENTS.md).
 Environment variables: `MAREA_DATA` (data folder, default `%LOCALAPPDATA%\Marea`, on Linux
-`~/.local/share/Marea`) and `MAREA_LANG` (`en`, `it`, `es`, `fr`, `de`).
+`~/.local/share/Marea`) and `MAREA_LANG` (`en`, `it`, `es`, `fr`, `de`, `pt`).
 
 ### On Linux
 

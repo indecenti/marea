@@ -42,6 +42,9 @@ public sealed partial class LocalizationTests
         Assert.StartsWith("copia identica", Loc.Render(coded));
         Loc.SetLanguage("de");
         Assert.StartsWith("identische Kopie", Loc.Render(coded));
+        Loc.SetLanguage("pt");
+        Assert.Equal("pt", Loc.Language);
+        Assert.StartsWith("cópia idêntica", Loc.Render(coded));
         Assert.Equal("Access denied", Loc.Render("Access denied"));
         Loc.SetLanguage("en");
     }
@@ -57,7 +60,9 @@ public sealed partial class LocalizationTests
     [Theory]
     [InlineData(new[] { "it-IT", "en-US" }, "it")]
     [InlineData(new[] { "ja-JP", "de-CH", "en-US" }, "de")]
-    [InlineData(new[] { "pt-BR", "zh-Hans-CN" }, "en")]
+    [InlineData(new[] { "pt-BR", "zh-Hans-CN" }, "pt")]
+    [InlineData(new[] { "pt-PT", "en-US" }, "pt")]
+    [InlineData(new[] { "ja-JP", "zh-Hans-CN" }, "en")]
     [InlineData(new string[0], "en")]
     [InlineData(new[] { "fr" }, "fr")]
     public void AutomaticLanguageTakesTheFirstSupportedPreferredOrEnglish(string[] preferred, string expected) =>
