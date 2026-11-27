@@ -20,7 +20,7 @@ public partial class MainWindow : Window
         Nav.SelectedIndex = 0;
     }
 
-    /// <summary>Navigates to a page by tag (overview, models, files, folders, journal, settings).</summary>
+    /// <summary>Navigates to a page by tag (overview, models, files, clutter, folders, journal, settings).</summary>
     public void Navigate(string tag)
     {
         foreach (ListBoxItem item in Nav.Items)
@@ -42,6 +42,7 @@ public partial class MainWindow : Window
         {
             "models" => new ModelsView(),
             "files" => new FilesView(),
+            "clutter" => new ClutterView(),
             "folders" => new FoldersView(),
             "journal" => new JournalView(),
             "settings" => new SettingsView(),

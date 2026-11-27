@@ -57,7 +57,7 @@ Marea 现在也可以在 **Linux**（x64 和 ARM64）上通过 `mareactl` 释放
 
 ## 0.7 新功能
 
-Ollama 0.40 转换了部分 GGUF 模型，同时保留了原件，仅仅是为了能够回退到旧版本：这些模型因此占用了双倍空间。Marea 现在能找到这些**回滚副本**，并在不删除的情况下释放它们：如果你将来回退到更旧的 Ollama，原件会自动从 Ollama 的注册表取回。
+Ollama 0.40 转换了部分 GGUF 模型，同时保留了原件，仅仅是为了能够回退到旧版本：这些模型因此占用了双倍空间。Marea 现在能找到这些**回滚副本**，并在不删除的情况下释放它们：如果你将来回退到更旧的 Ollama，原件会自动从 Ollama 模型库取回。
 
 ## 0.6 新功能
 
@@ -108,7 +108,7 @@ Marea 使用 **Windows Cloud Files API**，也就是 OneDrive“仅联机”文�
 ## 0.2 新功能
 
 - **自动发现来源**：根据硬盘上已有的线索（缓存、`base_model`、`_name_or_path`、git、来自 `hf.co` 的 Ollama 模型）推断出 Hugging Face 仓库。
-- **Ollama 作为来源**：Ollama 模型从它的注册表取回，并通过指纹校验。如果你不使用 Ollama，一切照旧。
+- **Ollama 作为来源**：Ollama 模型从它的模型库取回，并通过指纹校验。如果你不使用 Ollama，一切照旧。
 - **更新提示**（仅通知）以及**由 GitHub 构建的发布版本**，带有证明：
   `gh attestation verify <文件> --repo indecenti/marea`。
 - **实测**：65 秒分析 63.7 GB，11 秒释放 19.9 GB，35 秒重新计算出 bf16，且逐位完全相同。

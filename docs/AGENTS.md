@@ -150,6 +150,9 @@ never deletes, and every item names the command of the tool that owns the data.
       "kind": "package_cache",
       "path": "C:\\Users\\you\\AppData\\Local\\pip\\Cache",
       "sizeBytes": 8234567890,
+      "freeableBytes": 8234567890,
+      "sharedBytes": 0,
+      "toolFound": true,
       "files": 2790,
       "newest": "2026-11-20T09:14:02Z",
       "command": "pip cache purge",
@@ -167,6 +170,13 @@ folder that is still in use is judged entry by entry, two levels deep), `crash_d
 `hibernation` and `virtual_disk`. The last two have `reclaimable: false` and are counted in
 `otherBytes`, never in `reclaimableBytes`: the hibernation file goes only by turning hibernation
 off, and a virtual disk holds real data and can only be compacted. Items under 100 MB are left out.
+
+`freeableBytes` is what the disk really gets back: `sizeBytes` minus `sharedBytes`, the files of
+1 MB or more that have another hard link elsewhere. uv and pnpm hard-link packages from their
+store into environments and projects, so emptying the store does not free those bytes; a tool that
+adds up file sizes overstates them. `reclaimableBytes` is the sum of `freeableBytes`. `toolFound`
+says whether the program in `command` is on `PATH` (absent when there is no command): when it is
+`false`, tell the user to run the command from where the tool is installed.
 Junctions and symbolic links are never followed. An agent should show the list and run a `command`
 only after the user agrees; for `stale_temp` it should delete only the paths in `parts`.
 

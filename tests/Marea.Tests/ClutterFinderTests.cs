@@ -11,6 +11,10 @@ public sealed class ClutterFinderTests : IDisposable
 
     public void Dispose() => Directory.Delete(_dir, true);
 
+    [System.Runtime.InteropServices.DllImport("kernel32.dll", CharSet = System.Runtime.InteropServices.CharSet.Unicode, SetLastError = true)]
+    [return: System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.Bool)]
+    private static extern bool CreateHardLink(string newFile, string existingFile, IntPtr security);
+
     private string Make(string rel, int kb, int ageDays = 0)
     {
         var p = Path.Combine(_dir, rel);
@@ -147,5 +151,46 @@ public sealed class ClutterFinderTests : IDisposable
         Assert.Equal([Path.Combine(@"X:\cargo", "registry")], spots.Where(s => s.Id == "cargo").Select(s => s.Path));
         Assert.Equal(2, spots.Count(s => s.Id == "npm"));
         Assert.All(spots.Where(s => s.Id is "pip" or "npm" or "uv" or "nuget" or "go"), s => Assert.NotNull(s.Command));
+        Assert.All(spots, s => Assert.Equal(s.Id is "uv" or "pnpm", s.HardLinks));
+        Assert.Equal("dotnet", spots.Single(s => s.Id == "nuget").Tool);
+    }
+
+    [Fact]
+    public void BytesHardLinkedFromElsewhereAreNotCountedAsFreeable()
+    {
+        var cached = Make(@"uv\archive\torch.dll", 3000);
+        Make(@"uv\archive\only-here.dll", 2000);
+        Directory.CreateDirectory(At(@"venv\Lib"));
+        Assert.True(CreateHardLink(At(@"venv\Lib\torch.dll"), cached, IntPtr.Zero));
+        var found = ClutterFinder.Find(Places(caches:
+        [
+            new CacheSpot("uv", At("uv"), "uv cache clean", "uv", HardLinks: true),
+            new CacheSpot("pip", At("venv"), "pip cache purge", "pip"),
+        ]), minBytes: 1, nowUtc: Now, toolOnPath: t => t == "pip");
+        var uv = found.Single(i => i.Id == "uv");
+        Assert.Equal(5000L << 10, uv.Bytes);
+        Assert.Equal(3000L << 10, uv.SharedBytes);
+        Assert.Equal(2000L << 10, uv.FreeableBytes);
+        Assert.False(uv.ToolFound);
+        // A store that does not hard-link is not opened file by file: its size is reported as is.
+        var pip = found.Single(i => i.Id == "pip");
+        Assert.Equal(0, pip.SharedBytes);
+        Assert.True(pip.ToolFound);
+        // Largest really freeable first: pip (3000 KB, all of it) before uv (2000 KB of 5000).
+        Assert.Equal(["pip", "uv"], found.Select(i => i.Id));
+    }
+
+    [Fact]
+    public void AdviceNamesTheCommandAndWhatTheFigureLeavesOut()
+    {
+        Loc.SetLanguage("en");
+        var item = new ClutterItem("uv", ClutterKind.PackageCache, At("uv"), 5L << 30, 10, Now, "uv cache clean", true, [],
+            SharedBytes: 3L << 30, ToolFound: false);
+        var advice = ClutterFinder.Advice(item, 7);
+        Assert.Equal(3, advice.Count);
+        Assert.Contains("uv cache clean", advice[0]);
+        Assert.Contains("3.0 GB", advice[1].Replace(',', '.'));
+        Assert.Contains("PATH", advice[2]);
+        Assert.Single(ClutterFinder.Advice(item with { SharedBytes = 0, ToolFound = true }, 7));
     }
 }

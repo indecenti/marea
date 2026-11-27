@@ -64,6 +64,12 @@
                         <TextBlock Text="{l:T nav.files}" Style="{StaticResource NavText}" />
                     </StackPanel>
                 </ListBoxItem>
+                <ListBoxItem Tag="clutter" Padding="12,10" AutomationProperties.Name="{l:T nav.clutter}">
+                    <StackPanel Orientation="Horizontal">
+                        <Path Data="{StaticResource Icon.Broom}" Style="{StaticResource Ico}" />
+                        <TextBlock Text="{l:T nav.clutter}" Style="{StaticResource NavText}" />
+                    </StackPanel>
+                </ListBoxItem>
                 <ListBoxItem Tag="folders" Padding="12,10" AutomationProperties.Name="{l:T nav.folders}">
                     <StackPanel Orientation="Horizontal">
                         <Path Data="{StaticResource Icon.Folder}" Style="{StaticResource Ico}" />

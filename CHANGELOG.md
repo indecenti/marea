@@ -7,12 +7,15 @@ All notable changes to this project are documented here. The format follows
 ## [Unreleased]
 
 ### Added
-- **`mareactl clutter`**: what else fills the disk and can be produced again. It measures the caches
+- **Other space** (new page, and `mareactl clutter`): what else fills the disk and can be produced again. It measures the caches
   of pip, uv, npm, yarn, pnpm, NuGet, Go, Gradle and Cargo (honouring `PIP_CACHE_DIR`, `UV_CACHE_DIR`
   and the like), the entries of the temporary folder nothing has written to for 7 days (`--days N`),
   and crash dumps, and names the owner tool's own clean command for each. The hibernation file and
   virtual machine disks are listed apart as "needs a decision". Read-only: Marea deletes none of it,
   never follows a junction, and needs no setup. JSON: `marea.clutter/1`.
+- The figures are what the disk really gets back: files a store shares through hard links with
+  environments and projects (uv, pnpm) stay on disk when it is emptied, so they are reported apart
+  (`sharedBytes`) and left out of the total. A cache whose program is not on `PATH` says so.
 - Portuguese (Português, `pt`) for the app and `mareactl`, selectable in *Settings* or with
   `MAREA_LANG=pt`, and picked automatically when Portuguese (pt-BR or pt-PT) is among the Windows
   preferred languages. README in Portuguese: `docs/i18n/README.pt.md`.

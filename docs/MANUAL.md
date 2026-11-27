@@ -275,6 +275,19 @@ scratch.
   back, becomes an ordinary file again, and the folders are detached from Windows. Marea
   checks free space first, and refuses to detach a folder that still contains evaporated files.
 
+### Other space: caches and temporary files
+
+The **Other space** page measures what else fills the disk and can be produced again: the caches
+of pip, uv, npm, yarn, pnpm, NuGet, Go, Gradle and Cargo, the entries of the temporary folder
+nothing has written to for 7 days, and crash dumps. The figure on each card is what the disk really
+gets back: files a cache shares through hard links with your environments or projects stay on
+disk when the cache is emptied, so they are left out and listed apart.
+
+Marea deletes none of this. Each card shows the command of the program that owns the data
+(**Copy command**) and **Open folder**; a cache is best emptied by its own program, which knows
+what it is using. The hibernation file and virtual machine disks are listed under *Needs a
+decision*: they are large but not disposable. From the command line: `mareactl clutter`.
+
 ## 11. Managed folders
 
 ![Managed folders](images/folders.png)

@@ -31,14 +31,24 @@ public sealed record ClutterPart(string Path, long Bytes, DateTime? NewestUtc);
 /// <param name="Command">The owner tool's own clean command, when it has one.</param>
 /// <param name="Reclaimable">True when removing it loses nothing; false when it needs a decision.</param>
 /// <param name="Parts">Sub-entries, largest first (may be empty).</param>
+/// <param name="SharedBytes">Bytes of files that have another hard link elsewhere (a virtual environment,
+/// a project): they stay on disk when this item is emptied.</param>
+/// <param name="ToolFound">For a cache: whether the owner tool is on PATH (null when not checked).</param>
 public sealed record ClutterItem(string Id, ClutterKind Kind, string Path, long Bytes, int Files, DateTime? NewestUtc,
-    string? Command, bool Reclaimable, IReadOnlyList<ClutterPart> Parts);
+    string? Command, bool Reclaimable, IReadOnlyList<ClutterPart> Parts, long SharedBytes = 0, bool? ToolFound = null)
+{
+    /// <summary>Bytes the disk really gets back when the item is emptied.</summary>
+    public long FreeableBytes => Bytes - SharedBytes;
+}
 
 /// <summary>A cache folder of a known tool.</summary>
 /// <param name="Id">Stable code of the tool.</param>
 /// <param name="Path">Where the cache lives.</param>
 /// <param name="Command">The tool's own clean command, or null when it has none.</param>
-public sealed record CacheSpot(string Id, string Path, string? Command);
+/// <param name="Tool">Executable that runs the command (looked up on PATH), or null.</param>
+/// <param name="HardLinks">True when the tool hard-links cached files into projects, so a cached file
+/// may not be freed by emptying the cache.</param>
+public sealed record CacheSpot(string Id, string Path, string? Command, string? Tool = null, bool HardLinks = false);
 
 /// <summary>Where to look. Tests pass their own folders; <see cref="Current"/> describes this machine.</summary>
 /// <param name="Caches">Candidate cache folders (missing ones are skipped).</param>
@@ -72,14 +82,17 @@ public sealed record ClutterPlaces(IReadOnlyList<CacheSpot> Caches, string? Temp
     {
         IEnumerable<CacheSpot> Tool(string id, string? command, string? overrideVar, string? overrideTail, params string[] defaults)
         {
+            // The command's first word is the program to look for; uv and pnpm hard-link out of their store.
+            var exe = command?.Split(' ')[0];
+            var links = id is "uv" or "pnpm";
             if (overrideVar is not null && env(overrideVar) is { Length: > 0 } custom)
             {
-                yield return new CacheSpot(id, overrideTail is null ? custom : Path.Combine(custom, overrideTail), command);
+                yield return new CacheSpot(id, overrideTail is null ? custom : Path.Combine(custom, overrideTail), command, exe, links);
                 yield break;
             }
             foreach (var d in defaults)
             {
-                yield return new CacheSpot(id, d, command);
+                yield return new CacheSpot(id, d, command, exe, links);
             }
         }
         var cache = env("XDG_CACHE_HOME") is { Length: > 0 } xdg ? xdg : Path.Combine(home, ".cache");
@@ -100,8 +113,9 @@ public sealed record ClutterPlaces(IReadOnlyList<CacheSpot> Caches, string? Temp
 
 /// <summary>Finds space that is not a model but can be produced again: package caches, idle temporary
 /// files, crash dumps; and space that needs a decision (hibernation file, virtual disks).
-/// Read-only: it lists directories, sizes and write times, never opens a file, never follows a
-/// junction or symbolic link, and never deletes. Each item names the command of the tool that owns it.</summary>
+/// Read-only: it lists directories, sizes and write times, never reads a file's content (in a store
+/// that hard-links, a file is opened only to count its links), never follows a junction or symbolic
+/// link, and never deletes. Each item names the command of the tool that owns it.</summary>
 public static class ClutterFinder
 {
     private static readonly EnumerationOptions Deep = new()
@@ -126,9 +140,11 @@ public static class ClutterFinder
     /// <param name="minBytes">Items smaller than this are left out.</param>
     /// <param name="nowUtc">Clock, for tests.</param>
     /// <param name="ct">Cancellation.</param>
+    /// <param name="toolOnPath">Whether a program can be run by name; defaults to a PATH lookup.</param>
     public static List<ClutterItem> Find(ClutterPlaces places, int staleDays = 7, long minBytes = 100L << 20,
-        DateTime? nowUtc = null, CancellationToken ct = default)
+        DateTime? nowUtc = null, CancellationToken ct = default, Func<string, bool>? toolOnPath = null)
     {
+        toolOnPath ??= OnPath;
         var items = new List<ClutterItem>();
         var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var spot in places.Caches)
@@ -136,8 +152,9 @@ public static class ClutterFinder
             ct.ThrowIfCancellationRequested();
             if (Directory.Exists(spot.Path) && seen.Add(Path.GetFullPath(spot.Path)))
             {
-                var s = Measure(new DirectoryInfo(spot.Path), ct);
-                items.Add(new ClutterItem(spot.Id, ClutterKind.PackageCache, spot.Path, s.Bytes, s.Files, s.Newest, spot.Command, true, []));
+                var s = Measure(new DirectoryInfo(spot.Path), ct, spot.HardLinks);
+                items.Add(new ClutterItem(spot.Id, ClutterKind.PackageCache, spot.Path, s.Bytes, s.Files, s.Newest, spot.Command, true, [],
+                    s.Shared, spot.Tool is null ? null : toolOnPath(spot.Tool)));
             }
         }
         if (places.Temp is { } temp && Directory.Exists(temp))
@@ -169,7 +186,7 @@ public static class ClutterFinder
             items.Add(new ClutterItem("virtual_disks", ClutterKind.VirtualDisk, CommonParent(disks.Select(d => d.Path)),
                 disks.Sum(d => d.Bytes), disks.Count, disks.Max(d => d.NewestUtc), null, false, disks));
         }
-        return items.Where(i => i.Bytes >= minBytes).OrderByDescending(i => i.Reclaimable).ThenByDescending(i => i.Bytes).ToList();
+        return items.Where(i => i.Bytes >= minBytes).OrderByDescending(i => i.Reclaimable).ThenByDescending(i => i.FreeableBytes).ToList();
     }
 
     /// <summary>Adds <paramref name="e"/> to <paramref name="parts"/> when nothing inside is newer than the
@@ -200,11 +217,16 @@ public static class ClutterFinder
         return n;
     }
 
-    private readonly record struct Stat(long Bytes, int Files, DateTime? Newest);
+    private readonly record struct Stat(long Bytes, int Files, DateTime? Newest, long Shared = 0);
 
-    private static Stat Measure(DirectoryInfo d, CancellationToken ct)
+    /// <summary>Files smaller than this are not worth an open just to count their links: a store is
+    /// mostly large binaries by size, and opening every small file would make the walk many times slower.</summary>
+    private const long LinkCheckMinBytes = 1 << 20;
+
+    private static Stat Measure(DirectoryInfo d, CancellationToken ct, bool countLinks = false)
     {
         long bytes = 0;
+        long shared = 0;
         var n = 0;
         DateTime? newest = null;
         try
@@ -215,8 +237,13 @@ public static class ClutterFinder
                 {
                     ct.ThrowIfCancellationRequested();
                 }
-                bytes += Length(f);
+                var len = Length(f);
+                bytes += len;
                 n++;
+                if (countLinks && len >= LinkCheckMinBytes && Links(f.FullName) > 1)
+                {
+                    shared += len;
+                }
                 if (WriteTime(f) is { } t && (newest is null || t > newest))
                 {
                     newest = t;
@@ -227,7 +254,86 @@ public static class ClutterFinder
         {
             // A folder that vanishes or closes while being listed: report what was counted.
         }
-        return new Stat(bytes, n, newest);
+        return new Stat(bytes, n, newest, shared);
+    }
+
+    /// <summary>Translation key suffix of a kind (clutter.kind.package_cache, ...).</summary>
+    public static string KindKey(ClutterKind k) => k switch
+    {
+        ClutterKind.PackageCache => "package_cache",
+        ClutterKind.StaleTemp => "stale_temp",
+        ClutterKind.CrashDumps => "crash_dumps",
+        ClutterKind.Hibernation => "hibernation",
+        _ => "virtual_disk",
+    };
+
+    /// <summary>What to do about an item, in the active language: first the owner tool's command or the
+    /// rule that makes it safe, then what the figure leaves out (hard-linked bytes, a tool not on PATH).</summary>
+    public static IReadOnlyList<string> Advice(ClutterItem i, int staleDays)
+    {
+        var lines = new List<string>
+        {
+            i.Kind switch
+            {
+                ClutterKind.PackageCache => i.Command is { } c
+                    ? Loc.T("clutter.hint.command", i.Id, c)
+                    : Loc.T("clutter.hint.no_command", i.Id),
+                ClutterKind.StaleTemp => Loc.T("clutter.hint.temp", i.Parts.Count, staleDays),
+                ClutterKind.CrashDumps => Loc.T("clutter.hint.crash_dumps"),
+                ClutterKind.Hibernation => Loc.T("clutter.hint.hibernation", i.Command ?? ""),
+                _ => Loc.T("clutter.hint.virtual_disk", i.Files),
+            },
+        };
+        if (i.SharedBytes > 0)
+        {
+            lines.Add(Loc.T("clutter.hint.shared", $"{i.SharedBytes / (double)(1L << 30):0.0} GB"));
+        }
+        if (i.ToolFound == false)
+        {
+            lines.Add(Loc.T("clutter.hint.tool_missing", i.Id));
+        }
+        return lines;
+    }
+
+    /// <summary>Hard links to a file; 1 when it cannot be asked (in use, no permission).</summary>
+    private static int Links(string path)
+    {
+        try
+        {
+            using var h = File.OpenHandle(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+            return FileSystemFacts.HardLinkCount(h);
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+        {
+            return 1;
+        }
+    }
+
+    /// <summary>True when <paramref name="program"/> can be started by name from PATH.</summary>
+    public static bool OnPath(string program)
+    {
+        var dirs = (Environment.GetEnvironmentVariable("PATH") ?? "").Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries);
+        string[] exts = OperatingSystem.IsWindows()
+            ? (Environment.GetEnvironmentVariable("PATHEXT") ?? ".EXE;.CMD;.BAT").Split(';', StringSplitOptions.RemoveEmptyEntries)
+            : [""];
+        foreach (var dir in dirs)
+        {
+            foreach (var ext in exts)
+            {
+                try
+                {
+                    if (File.Exists(Path.Combine(dir.Trim('"'), program + ext)))
+                    {
+                        return true;
+                    }
+                }
+                catch (ArgumentException)
+                {
+                    // A malformed PATH entry: skip it.
+                }
+            }
+        }
+        return false;
     }
 
     private static List<FileSystemInfo> Children(DirectoryInfo d)

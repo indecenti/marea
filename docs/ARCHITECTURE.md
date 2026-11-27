@@ -40,7 +40,7 @@ build/                publish.ps1 (portable), installer.ps1 (MSI), linux-selftes
 | `MareaEngine.cs` | Facade: roots, scan, plan, evaporate, bring back, restore-all, provider role (lock file) |
 | `Loc.cs` + `i18n/*.json` | Localization; persistent texts stored as codes and rendered at display time |
 | `FileSystemFacts.cs`, `ModelFolderFinder.cs` | Folder validation rules, model-folder discovery |
-| `Clutter.cs` | Read-only finder of regenerable space outside the model folders: package caches, idle temporary entries, crash dumps; hibernation file and virtual disks as "needs a decision" |
+| `Clutter.cs` | Read-only finder of regenerable space outside the model folders: package caches, idle temporary entries, crash dumps; hibernation file and virtual disks as "needs a decision". Hard-link aware: bytes shared with environments are not counted as freeable |
 | `Inspect/ModelInspector.cs` | Identifies a file by its bytes (GGUF, safetensors, PyTorch zip, raw pickle, ONNX) and returns its `ModelMeta` |
 | `Inspect/GgufReader.cs` | Bounded GGUF v2/v3 header reader: architecture, name, quantization, parameter count, chat template |
 | `Inspect/PickleScanner.cs`, `Inspect/ImportRating.cs` | Opcode walk of pickle streams (never unpickled) and the allow/deny lists that rate their imports; Jinja red flags for GGUF templates |

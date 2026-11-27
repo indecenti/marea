@@ -20,7 +20,7 @@ internal static class ClutterCommands
             CliOutput.Json("marea.clutter/1", new
             {
                 staleDays,
-                reclaimableBytes = reclaimable.Sum(i => i.Bytes),
+                reclaimableBytes = reclaimable.Sum(i => i.FreeableBytes),
                 otherBytes = other.Sum(i => i.Bytes),
                 items = items.Select(i => new
                 {
@@ -28,6 +28,9 @@ internal static class ClutterCommands
                     kind = i.Kind,
                     path = i.Path,
                     sizeBytes = i.Bytes,
+                    freeableBytes = i.Reclaimable ? i.FreeableBytes : 0,
+                    sharedBytes = i.SharedBytes,
+                    toolFound = i.ToolFound,
                     files = i.Files,
                     newest = i.NewestUtc,
                     command = i.Command,
@@ -48,7 +51,7 @@ internal static class ClutterCommands
         }
         if (reclaimable.Count > 0)
         {
-            Console.WriteLine("\n" + Loc.T("clutter.total", CliOutput.Gb(reclaimable.Sum(i => i.Bytes)), reclaimable.Count));
+            Console.WriteLine("\n" + Loc.T("clutter.total", CliOutput.Gb(reclaimable.Sum(i => i.FreeableBytes)), reclaimable.Count));
         }
         if (other.Count > 0)
         {
@@ -63,8 +66,11 @@ internal static class ClutterCommands
 
     private static void Print(ClutterItem i, int staleDays)
     {
-        Console.WriteLine($"{CliOutput.Gb(i.Bytes),9}  {Loc.T("clutter.kind." + Key(i.Kind)),-24} {CliOutput.Short(i.Path)}");
-        Console.WriteLine($"{"",9}  {Hint(i, staleDays)}");
+        Console.WriteLine($"{CliOutput.Gb(i.Reclaimable ? i.FreeableBytes : i.Bytes),9}  {Loc.T("clutter.kind." + ClutterFinder.KindKey(i.Kind)),-24} {CliOutput.Short(i.Path)}");
+        foreach (var line in ClutterFinder.Advice(i, staleDays))
+        {
+            Console.WriteLine($"{"",9}  {line}");
+        }
         foreach (var p in i.Parts.Take(PartsShown))
         {
             Console.WriteLine($"{"",9}    {CliOutput.Gb(p.Bytes),9}  {CliOutput.Short(p.Path)}");
@@ -74,26 +80,4 @@ internal static class ClutterCommands
             Console.WriteLine($"{"",9}    {Loc.T("clutter.more", i.Parts.Count - PartsShown)}");
         }
     }
-
-    /// <summary>What to do about an item: the owner tool's command, or the rule that makes it safe.</summary>
-    private static string Hint(ClutterItem i, int staleDays) => i.Kind switch
-    {
-        ClutterKind.PackageCache => i.Command is { } c
-            ? Loc.T("clutter.hint.command", i.Id, c)
-            : Loc.T("clutter.hint.no_command", i.Id),
-        ClutterKind.StaleTemp => Loc.T("clutter.hint.temp", i.Parts.Count, staleDays),
-        ClutterKind.CrashDumps => Loc.T("clutter.hint.crash_dumps"),
-        ClutterKind.Hibernation => Loc.T("clutter.hint.hibernation", i.Command ?? ""),
-        _ => Loc.T("clutter.hint.virtual_disk", i.Files),
-    };
-
-    /// <summary>Translation key suffix of a kind (clutter.kind.package_cache, ...).</summary>
-    public static string Key(ClutterKind k) => k switch
-    {
-        ClutterKind.PackageCache => "package_cache",
-        ClutterKind.StaleTemp => "stale_temp",
-        ClutterKind.CrashDumps => "crash_dumps",
-        ClutterKind.Hibernation => "hibernation",
-        _ => "virtual_disk",
-    };
 }
