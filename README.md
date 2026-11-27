@@ -80,7 +80,8 @@ Free and open source (MIT) for Windows 10 and 11, and for Linux through `mareact
 - [Built for AI agents](#built-for-ai-agents)
 - [How it works](#how-it-works)
 - [Safety model](#safety-model)
-- [Install](#install)
+- [Field test](#field-test)
+- [Install](#install): [Windows](#windows) · [Linux](#linux) · [macOS](#macos-and-anywhere-the-safety-check)
 - [Quick start](#quick-start)
 - [Screenshots](#screenshots)
 - [Command line](#command-line)
@@ -182,51 +183,6 @@ notification, a bar on the overview, and the details on the Models page.
 mareactl watch --json      # exit 3 = models at risk, 4 = a file can no longer come back
 ```
 
-### On macOS and Linux too: `marea-check`
-
-The safety check is also a small standalone program for **macOS, Linux and Windows**, with no
-setup and nothing else installed. Download `marea-check-<version>-<platform>` from
-[Releases](https://github.com/indecenti/marea/releases), then:
-
-```bash
-tar -xzf marea-check-0.6.0-linux-x64.tar.gz
-./marea-check ~/models --json        # exit 0 ok, 3 check before loading, 4 dangerous
-```
-
-Same verdicts, JSON schema (`marea.check/1`) and exit codes as `mareactl check`, so it fits CI
-pipelines, download scripts and AI agents. Builds are attested like the app
-(`gh attestation verify <file> --repo indecenti/marea`). On macOS, if the file was downloaded with a
-browser, clear the quarantine flag once: `xattr -d com.apple.quarantine marea-check`.
-
-### On Linux: free space with `mareactl`
-
-Since 0.8, `mareactl` frees space on Linux the same way as on Windows: a file keeps its name and
-size, its data leaves the disk, and it comes back, verified, the moment a program opens it. Made
-for GPU servers and workstations full of Hugging Face, Ollama and llama.cpp models.
-
-```bash
-tar -xzf mareactl-0.8.0-linux-x64.tar.gz
-sudo ./mareactl service install        # the agent, as a systemd service for your user
-mareactl add ~/.cache/huggingface/hub
-mareactl scan
-mareactl free --gb 50 --yes            # undo: mareactl undo
-```
-
-How it works: a freed file becomes a sparse file of the same size, marked with an extended
-attribute. The agent (`marea-agent@<user>`) watches only those files with fanotify. When a program
-opens one, the open waits while the agent refills the file from its source and checks the sha256;
-only then does the program get it. Wrong or missing bytes: the program gets *Operation not
-permitted* and the file stays freed. A file another program has open or memory-mapped (a running
-llama.cpp or vLLM server) is never freed. If the agent is stopped, a freed file starts with a
-plain-text notice instead of model data, so no loader can mistake it for a model, and Marea
-refuses to free anything until the agent runs again.
-
-**Requirements:** x64 or ARM64, systemd, a file system with extended attributes and hole punching
-(ext4, XFS, Btrfs), model files owned by your user. The service runs as your user with
-`CAP_SYS_ADMIN` (needed by fanotify) plus `CAP_DAC_OVERRIDE`, `CAP_FOWNER` and `CAP_LEASE`; the
-installer copies the binary to `/usr/local/bin`, owned by root, so the service never runs a file
-your account could replace. There is no desktop app on Linux: the CLI and the agent do everything.
-
 ## Built for AI agents
 
 More and more disk housekeeping will be done by AI assistants through the command line. `mareactl`
@@ -241,10 +197,9 @@ is built for that, with guard rails a person can trust:
 - **Untrusted text stays data**: file names and model metadata are stripped of control and bidi
   characters in text output and escaped in JSON.
 
-```powershell
-mareactl check .\downloads
-ew-model.ckpt --json   # exit 4 = don't load it
-$env:MAREA_READONLY = "1"; mareactl models --json  # inventory, no changes possible
+```bash
+mareactl check ./downloads/new-model.ckpt --json   # exit 4 = don't load it
+MAREA_READONLY=1 mareactl models --json            # inventory, no changes possible
 ```
 
 The full contract is in [docs/AGENTS.md](docs/AGENTS.md).
@@ -286,9 +241,10 @@ pulled from `hf.co`. It then checks those authors' related repositories. On the 
 this alone proved 65% of the re-obtainable bytes with no configuration. The optional *search by
 folder name* (off by default, because it sends folder names) found the rest in 5 seconds.
 
-Under the hood Marea uses the **Windows Cloud Files API**, the same mechanism as OneDrive
-"online-only" files. Each file's own provenance plays the part of the cloud. No admin rights,
-no kernel driver of its own, no background service.
+Under the hood, on Windows Marea uses the **Cloud Files API**, the same mechanism as OneDrive
+"online-only" files: no admin rights, no kernel driver of its own. On Linux it uses sparse files
+and **fanotify** through a small systemd agent. Either way, each file's own provenance plays the
+part of the cloud.
 
 <p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/images/dark/files.png"><img src="docs/images/files.png" width="880" alt="Every file with its class, state and source"></picture></p>
 
@@ -299,16 +255,18 @@ Marea moves people's files, so the rule is **never lose a byte**:
 1. **Nothing leaves without an independent, verified way back** that will still exist
    afterwards. Two copies never leave together, and the sources of a recipe are pinned.
 2. **Last-moment proof.** Before evaporating, Marea opens the file exclusively, re-hashes
-   every byte, checks the source answers *now*, and refuses hard-linked files.
+   every byte, checks the source answers *now*, and refuses hard-linked files and files another
+   program has open (on Linux, a kernel write lease proves nobody has it open or mapped).
 3. **Every byte that comes back is re-verified.** A mismatch is logged and the file is
    fetched again from scratch.
-4. **Folders are never detached while placeholders remain.** Windows would delete them.
+4. **Folders are never detached while placeholders remain** (Windows would delete them).
    A test covers the case where the ledger itself loses track of a file.
 5. **You stay in control.** The first scan only measures, and every change goes through a
    plan you confirm. "Bring everything back" is one click, and the uninstaller runs it
    **before** removing anything.
-6. **Minimal network surface.** Outbound HTTPS to Hugging Face only. Hosts are allow-listed
-   on every redirect, and only public repository names are sent. No telemetry.
+6. **Minimal network surface.** Outbound HTTPS only to Hugging Face, the Ollama registry and
+   GitHub (update check). Hosts are allow-listed on every redirect, and only public repository
+   names and digests are sent. No telemetry.
 
 Full threat model: [SECURITY.md](SECURITY.md).
 
@@ -338,19 +296,65 @@ On Linux (Ubuntu 24.04, kernel 6.18, RTX 5070 Laptop), with the real tools:
 ## Install
 
 > **Pre-release.** Builds are not code-signed yet, so Windows SmartScreen may warn on first run
-> (*More info → Run anyway*). Verify the download with the `.sha256` file next to it.
+> (*More info → Run anyway*). Verify any download with the `.sha256` file next to it, and check
+> that it was built by this repository's CI with `gh attestation verify <file> --repo indecenti/marea`.
+
+| | Free space | Models page and safety check | Download |
+|---|---|---|---|
+| **Windows** 10 1809+ / 11, x64, NTFS | ✓ desktop app + `mareactl` | ✓ | `Marea-<version>-win-x64-portable.zip` |
+| **Linux** x64 / ARM64, systemd, ext4 · XFS · Btrfs | ✓ `mareactl` + systemd agent | ✓ | `mareactl-<version>-linux-<arch>.tar.gz` |
+| **macOS** Apple Silicon / Intel | not yet ([#10](https://github.com/indecenti/marea/issues/10)) | ✓ `marea-check` | `marea-check-<version>-osx-<arch>.tar.gz` |
+
+### Windows
 
 1. Download `Marea-<version>-win-x64-portable.zip` from [Releases](https://github.com/indecenti/marea/releases).
 2. Unzip it anywhere and run **`Marea.exe`**. .NET is included; nothing else to install.
-   Releases are built by GitHub Actions; check that yours came from this repository's CI with
-   `gh attestation verify Marea-<version>-win-x64-portable.zip --repo indecenti/marea`.
 3. Before deleting the folder, open *Settings → Bring everything back and detach*.
 
 A per-user MSI installer (no admin) is ready in [`installer/`](installer) and will ship
 with the first signed release.
 
-**Requirements:** Windows 10 1809+ or Windows 11, x64, NTFS. For Linux see
-[On Linux](#on-linux-free-space-with-mareactl).
+### Linux
+
+`mareactl` frees space on Linux the same way as on Windows: a file keeps its name and size, its
+data leaves the disk, and it comes back, verified, the moment a program opens it. Made for GPU
+servers and workstations full of Hugging Face, Ollama and llama.cpp models. There is no desktop
+app on Linux: the command line and a small agent do everything.
+
+```bash
+tar -xzf mareactl-0.8.1-linux-x64.tar.gz
+sudo ./mareactl service install        # once: the agent, as a systemd service for your user
+mareactl add ~/.cache/huggingface/hub
+mareactl scan
+mareactl free --gb 50 --yes            # undo: mareactl undo
+```
+
+A freed file becomes a sparse file of the same size, marked with an extended attribute. The agent
+(`marea-agent@<user>`) watches only those files with fanotify: when a program opens one, the open
+waits while the agent refills it from its source and checks the SHA-256, and only then goes
+through. Wrong or missing bytes: the program gets *Operation not permitted* and the file stays
+freed. A file another program has open or memory-mapped (a running llama.cpp, vLLM or Ollama
+server) is never freed. If the agent is stopped, Marea frees nothing, and a freed file starts
+with a plain-text notice instead of model data, so no loader can mistake it for a model.
+
+The service runs as your user with `CAP_SYS_ADMIN` (needed by fanotify) plus `CAP_DAC_OVERRIDE`,
+`CAP_FOWNER` and `CAP_LEASE`. The installer copies the binary to `/usr/local/bin`, owned by root,
+so the service never runs a file your account could replace. To remove it:
+`mareactl restore-all --yes`, then `sudo mareactl service uninstall --yes`.
+
+### macOS (and anywhere): the safety check
+
+`marea-check` is the model safety check as a small standalone program for **macOS, Linux and
+Windows**, with nothing to install:
+
+```bash
+tar -xzf marea-check-0.8.1-osx-arm64.tar.gz
+./marea-check ~/models --json        # exit 0 ok, 3 check before loading, 4 dangerous
+```
+
+Same verdicts, JSON schema (`marea.check/1`) and exit codes as `mareactl check`, so it fits CI
+pipelines, download scripts and AI agents. If the file was downloaded with a browser, clear the
+macOS quarantine flag once: `xattr -d com.apple.quarantine marea-check`.
 
 ## Quick start
 
@@ -413,25 +417,26 @@ screen readers.
 
 ## Command line
 
-`mareactl` uses the same engine as the app, so it works in scripts and over SSH.
+`mareactl` uses the same engine as the app, so it works in scripts, over SSH and on Linux.
 
 ```
-mareactl status                     disk and ledger status
-mareactl add <folder>               manage a folder (e.g. ...\checkpoints)
-mareactl remove <folder>            bring everything back and stop managing it
-mareactl scan                       fingerprints, sources, classes, model headers
-mareactl models [--unused N] [--json]   every model (or those unused for N days)
-mareactl check <file|folder> [--json]   safety check before loading (no setup needed)
-mareactl watch [--no-rescue] [--json]   check public sources, rescue models at risk
-mareactl plan [--gb N]              what would be freed (touches nothing)
-mareactl evaporate [--gb N] --yes   evaporate according to the plan
-mareactl free [--gb N|--all] [--instant] --yes   quick cleanup, undoable
-mareactl undo                       undo the last cleanup
-mareactl restore <file>             bring one file back now
-mareactl replicate                  copy unique files to the mirror (NAS)
-mareactl restore-all --yes          emergency exit: bring everything back, detach everything
-mareactl journal [n]                recent activity
-mareactl agent                      serve evaporated files without the app open
+mareactl status                                  disk and ledger status
+mareactl add <folder>                            manage a folder
+mareactl remove <folder>                         bring everything back and stop managing it
+mareactl scan                                    fingerprints, sources, classes, model headers
+mareactl models [--unused N|--rollback] [--json] every model, unused ones, Ollama rollback copies
+mareactl check <file|folder> [--json]            safety check before loading (no setup needed)
+mareactl watch [--no-rescue] [--json]            check public sources, rescue models at risk
+mareactl plan [--gb N]                           what would be freed (touches nothing)
+mareactl free [--gb N|--all|--rollback] [--instant] --yes   quick cleanup, undoable
+mareactl evaporate [--gb N] --yes                evaporate according to the plan
+mareactl undo                                    undo the last cleanup
+mareactl restore <file>                          bring one file back now
+mareactl replicate                               copy unique files to the mirror (NAS)
+mareactl restore-all --yes                       emergency exit: bring everything back, detach everything
+mareactl journal [n]                             recent activity
+mareactl agent                                   serve freed files without the app open
+mareactl service install|uninstall               Linux: install the agent as a systemd service (sudo)
 ```
 
 Read commands accept `--json`. Environment: `MAREA_DATA` (data folder), `MAREA_LANG` (`en`, `it`,
@@ -441,9 +446,10 @@ Read commands accept `--json`. Environment: `MAREA_DATA` (data folder), `MAREA_L
 ## FAQ
 
 **What happens if Marea isn't running when a program opens an evaporated file?**
-The program gets a "cloud provider not running" error, exactly like OneDrive files when
-OneDrive is closed. Start Marea and it works again. That's why Marea offers to start with
-Windows.
+On Windows the program gets a "cloud provider not running" error, exactly like OneDrive files when
+OneDrive is closed; start Marea and it works again (it offers to start with Windows). On Linux the
+agent is a systemd service that starts at boot; if it is stopped, a freed file reads as a short
+text notice, never as model data, and Marea refuses to free anything until it runs again.
 
 **Can I lose a file?**
 Marea is designed so that you can't. It only evaporates files with a verified source that
@@ -464,8 +470,9 @@ Only the first open of an evaporated file waits for the data (seconds for a loca
 Files you used recently are never evaporated.
 
 **What about Ollama, LM Studio, pip caches?**
-Ollama is supported: add `.ollama\models\blobs` (the first-run guide proposes it) and its blobs
-come back from the Ollama registry, verified by digest. If you don't use Ollama, nothing changes.
+Ollama is supported: add its `models/blobs` folder (the first-run guide proposes it) and its blobs
+come back from the Ollama registry, verified by digest. LM Studio, Jan and GPT4All folders are
+found on first run too. If you don't use Ollama, nothing changes.
 
 **Ollama 0.40 made my models take twice the space. Can Marea help?**
 Yes. The 0.40 update converted some GGUF models on your PC and kept the original next to the
@@ -477,14 +484,14 @@ digest. The converted copy Ollama uses today stays on disk, because no registry 
 Package caches are better cleaned by their own tools.
 
 **macOS / Linux?**
-Linux: yes, since 0.8, with `mareactl` and a systemd agent (see
-[On Linux](#on-linux-free-space-with-mareactl)). macOS: the safety check runs there today
+Linux: yes, since 0.8, with `mareactl` and a systemd agent (see [Linux](#linux)). macOS: the safety check runs there today
 (`marea-check` from Releases); freeing space needs a File Provider extension, which Apple only
 runs signed and notarized ([#10](https://github.com/indecenti/marea/issues/10)). Contributions welcome.
 
 **How do I uninstall?**
-Use the uninstaller (MSI), or *Settings → Bring everything back and detach* and then delete
-the folder (portable). Either way every file comes back first.
+Windows: *Settings → Bring everything back and detach*, then delete the folder. Linux:
+`mareactl restore-all --yes`, then `sudo mareactl service uninstall --yes`. Either way every file
+comes back first.
 
 ## Roadmap
 
@@ -517,7 +524,7 @@ the folder (portable). Either way every file comes back first.
 | [Tester guide](docs/TESTING.md) | Early testers: a safe 15-minute checklist and what to report |
 | [Security model](SECURITY.md) | How Marea guarantees it never loses a byte |
 | [Code signing policy](CODE_SIGNING_POLICY.md) | How releases are built and signed, and what Marea sends over the network |
-| [Code signing policy](CODE_SIGNING_POLICY.md) | How releases are built and signed, and what Marea sends over the network |
+| [For AI agents](docs/AGENTS.md) | The `mareactl` contract: commands, exit codes, JSON schemas, guard rails |
 | [Architecture](docs/ARCHITECTURE.md) | Contributors: how the engine works |
 | [Distribution](docs/DISTRIBUTION.md) | Maintainers: releases, signing, installer, winget |
 | [Changelog](CHANGELOG.md) | What changed in each version |
@@ -528,7 +535,9 @@ the folder (portable). Either way every file comes back first.
 git clone https://github.com/indecenti/marea
 cd marea
 dotnet test tests/Marea.Tests --filter "Category!=Network"
-powershell -File build/publish.ps1        # portable build in dist/
+powershell -File build/publish.ps1        # Windows portable build in dist/
+dotnet publish src/Marea.Cli -f net10.0 -r linux-x64 -c Release --self-contained -p:PublishSingleFile=true -o out
+sudo bash build/linux-selftest.sh out/mareactl "$USER"   # Linux end-to-end test
 ```
 
 Requires the .NET 10 SDK. The architecture is described in
