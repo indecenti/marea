@@ -16,7 +16,7 @@ public static class Loc
 
     /// <summary>Supported languages (code, native name).</summary>
     public static readonly IReadOnlyList<(string Code, string Name)> Languages =
-        [("it", "Italiano"), ("en", "English"), ("es", "Español"), ("fr", "Français"), ("de", "Deutsch"), ("pt", "Português")];
+        [("it", "Italiano"), ("en", "English"), ("es", "Español"), ("fr", "Français"), ("de", "Deutsch"), ("pt", "Português"), ("zh", "简体中文")];
 
     /// <summary>Active language code.</summary>
     public static string Language { get; private set; } = "en";

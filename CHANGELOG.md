@@ -9,7 +9,10 @@ All notable changes to this project are documented here. The format follows
 ### Added
 - Portuguese (Português, `pt`) for the app and `mareactl`, selectable in *Settings* or with
   `MAREA_LANG=pt`, and picked automatically when Portuguese (pt-BR or pt-PT) is among the Windows
-  preferred languages.
+  preferred languages. README in Portuguese: `docs/i18n/README.pt.md`.
+- Simplified Chinese (简体中文, `zh`) for the app and `mareactl`, selectable in *Settings* or with
+  `MAREA_LANG=zh`, picked automatically when Chinese is among the Windows preferred languages.
+  README in Chinese: `docs/i18n/README.zh.md`.
 
 ## [0.8.1] - 2026-11-27
 

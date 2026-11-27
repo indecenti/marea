@@ -1,7 +1,7 @@
 # Marea — User manual
 
 Version 0.8 · Windows 10 1809+ / Windows 11 · Linux (command line) · English
-([Italiano](i18n/README.it.md) · [Español](i18n/README.es.md) · [Français](i18n/README.fr.md) · [Deutsch](i18n/README.de.md))
+([Italiano](i18n/README.it.md) · [Español](i18n/README.es.md) · [Français](i18n/README.fr.md) · [Deutsch](i18n/README.de.md) · [Português](i18n/README.pt.md) · [简体中文](i18n/README.zh.md))
 
 1. [What Marea does](#1-what-marea-does)
 2. [Install](#2-install)
@@ -293,7 +293,7 @@ Every screenshot in this manual uses the light theme; the dark theme looks like 
 
 | Setting | Default | Meaning |
 |---|---|---|
-| Language | Automatic, as Windows | English, Italiano, Español, Français, Deutsch, Português. *Automatic* takes the first of your Windows preferred languages that Marea speaks, otherwise English, and shows which one it picked |
+| Language | Automatic, as Windows | English, Italiano, Español, Français, Deutsch, Português, 简体中文. *Automatic* takes the first of your Windows preferred languages that Marea speaks, otherwise English, and shows which one it picked |
 | Theme | Follow Windows | Light, dark, or the Windows setting. Changes as soon as you pick it |
 | Automatic cleanup | **Off** | Every 10 minutes, if free space is below the target, Marea frees on its own the files that are easiest to get back |
 | Free space to keep | 100 GB | The target of automatic cleanup |
@@ -366,7 +366,7 @@ Every command that changes something shows the plan first and does nothing witho
 `MAREA_READONLY=1` refuses every change (exit code 5). The full contract, with exit codes and
 JSON schemas, is in [AGENTS.md](AGENTS.md).
 Environment variables: `MAREA_DATA` (data folder, default `%LOCALAPPDATA%\Marea`, on Linux
-`~/.local/share/Marea`) and `MAREA_LANG` (`en`, `it`, `es`, `fr`, `de`, `pt`).
+`~/.local/share/Marea`) and `MAREA_LANG` (`en`, `it`, `es`, `fr`, `de`, `pt`, `zh`).
 
 ### On Linux
 

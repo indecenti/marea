@@ -13,7 +13,7 @@ string[] changing = ["add", "remove", "evaporate", "free", "undo", "restore", "r
 
 if (cmd == "check")
 {
-    Loc.SetLanguage(Environment.GetEnvironmentVariable("MAREA_LANG"));
+    UseLanguage(Environment.GetEnvironmentVariable("MAREA_LANG"));
     if (positional.Count == 0)
     {
         Console.Error.WriteLine(Loc.T("cli.missing_arg"));
@@ -23,7 +23,7 @@ if (cmd == "check")
 }
 
 using var engine = new MareaEngine(Environment.GetEnvironmentVariable("MAREA_DATA"));
-Loc.SetLanguage(Environment.GetEnvironmentVariable("MAREA_LANG") ?? engine.Settings.Language);
+UseLanguage(Environment.GetEnvironmentVariable("MAREA_LANG") ?? engine.Settings.Language);
 var progress = new Progress<ScanProgress>(p =>
 {
     if (json)
@@ -431,3 +431,20 @@ void Journal(int count)
 
 static string Label(Recoverability r) => Loc.T("class." + r.ToString().ToLowerInvariant());
 static string Dur(double s) => double.IsInfinity(s) ? "-" : s < 90 ? $"{s:0} s" : $"{s / 60:0} min";
+
+// Chinese needs a UTF-8 console: the legacy code pages of a Western Windows console print "?" instead.
+static void UseLanguage(string? code)
+{
+    Loc.SetLanguage(code);
+    if (Loc.Language == "zh")
+    {
+        try
+        {
+            Console.OutputEncoding = new System.Text.UTF8Encoding(false);
+        }
+        catch (IOException)
+        {
+            // Output is not a console that can switch encoding: leave it as it is.
+        }
+    }
+}

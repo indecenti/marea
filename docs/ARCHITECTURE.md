@@ -15,7 +15,7 @@ src/
   Marea.Cli/          mareactl: same engine for scripts, SSH and the uninstaller; on Linux
                       also the agent and `service install` (systemd).
 tests/Marea.Tests/    Unit tests + end-to-end tests on the real cloud filter driver.
-tools/                i18n table (single source for 6 languages), icon generator.
+tools/                i18n table (single source for 7 languages), icon generator.
 installer/            WiX v7 per-user MSI, winget manifest templates.
 build/                publish.ps1 (portable), installer.ps1 (MSI), linux-selftest.sh
                       (end-to-end test on a real Linux kernel, run by CI).

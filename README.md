@@ -9,7 +9,9 @@
   <a href="docs/i18n/README.it.md">Italiano</a> ·
   <a href="docs/i18n/README.es.md">Español</a> ·
   <a href="docs/i18n/README.fr.md">Français</a> ·
-  <a href="docs/i18n/README.de.md">Deutsch</a>
+  <a href="docs/i18n/README.de.md">Deutsch</a> ·
+  <a href="docs/i18n/README.pt.md">Português</a> ·
+  <a href="docs/i18n/README.zh.md">简体中文</a>
 </p>
 
 <p align="center">
@@ -411,7 +413,7 @@ verified. Keep Marea running; it offers to start with Windows.
   </tr>
 </table>
 
-The app speaks English, Italiano, Español, Français, Deutsch and Português, follows the Windows
+The app speaks English, Italiano, Español, Français, Deutsch, Português and 简体中文, follows the Windows
 light or dark theme (or the one you pick in *Settings*), and every control has an accessible name
 for screen readers.
 
@@ -440,7 +442,7 @@ mareactl service install|uninstall               Linux: install the agent as a s
 ```
 
 Read commands accept `--json`. Environment: `MAREA_DATA` (data folder), `MAREA_LANG` (`en`, `it`,
-`es`, `fr`, `de`, `pt`), `MAREA_READONLY=1` (refuse every change). Exit codes and JSON schemas:
+`es`, `fr`, `de`, `pt`, `zh`), `MAREA_READONLY=1` (refuse every change). Exit codes and JSON schemas:
 [docs/AGENTS.md](docs/AGENTS.md).
 
 ## FAQ
@@ -497,7 +499,7 @@ comes back first.
 
 - [x] Provenance ledger, duplicates, Hugging Face sources, NAS mirror, bf16 ← fp32 recipes
 - [x] Transparent evaporation and verified return (Windows Cloud Files)
-- [x] Tide planner, desktop app, `mareactl`, 6 languages, portable build
+- [x] Tide planner, desktop app, `mareactl`, 7 languages, portable build
 - [x] "Free up space in 3 clicks" wizard with instant-only mode and one-click undo
 - [x] Automatic source discovery, Ollama source, update notifications, attested CI releases
 - [x] Fluent design with icons, light and dark theme, accessible controls

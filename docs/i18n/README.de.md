@@ -9,7 +9,9 @@
   <a href="README.it.md">Italiano</a> ·
   <a href="README.es.md">Español</a> ·
   <a href="README.fr.md">Français</a> ·
-  <b>Deutsch</b>
+  <b>Deutsch</b> ·
+  <a href="README.pt.md">Português</a> ·
+  <a href="README.zh.md">简体中文</a>
 </p>
 
 ---

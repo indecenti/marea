@@ -69,7 +69,7 @@ public sealed class MareaSettings
     /// <summary>Start the agent at sign-in (needed to bring evaporated files back).</summary>
     public bool StartWithWindows { get; set; }
 
-    /// <summary>UI language code (it, en, es, fr, de, pt) or "auto" to follow Windows.</summary>
+    /// <summary>UI language code (it, en, es, fr, de, pt, zh) or "auto" to follow Windows.</summary>
     public string Language { get; set; } = "auto";
 
     /// <summary>Colour theme: "system", "light" or "dark".</summary>

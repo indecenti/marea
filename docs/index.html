@@ -40,7 +40,7 @@
       "codeRepository": "https://github.com/indecenti/marea",
       "image": "https://indecenti.github.io/marea/images/overview.png",
       "screenshot": "https://indecenti.github.io/marea/images/models.png",
-      "inLanguage": ["en", "it", "es", "fr", "de", "pt"],
+      "inLanguage": ["en", "it", "es", "fr", "de", "pt", "zh"],
       "description": "Frees disk space used by local AI models without deleting them: files with a verified source (duplicate on disk, bit-exact recipe, pinned Hugging Face commit, Ollama registry blob, NAS mirror) become 0-byte placeholders that come back, SHA-256 verified, when a program opens them. Includes a models inventory, a static load-safety check for pickle and GGUF files, an endangered-model watch and an agent-ready command line.",
       "featureList": [
         "Frees space without deleting: Windows Cloud Files placeholders",
@@ -54,7 +54,7 @@
         "Unused-models filter and shareable result card",
         "Mass-read detection with per-program blocking",
         "Command line with versioned JSON for scripts and AI agents",
-        "English, Italian, Spanish, French, German, Portuguese; light and dark theme"
+        "English, Italian, Spanish, French, German, Portuguese, Simplified Chinese; light and dark theme"
       ]
     },
     {
@@ -151,7 +151,7 @@ footer { padding: 32px 0 48px; color: var(--muted); font-size: .9rem; text-align
     <a class="btn" href="https://github.com/indecenti/marea">Source code on GitHub</a>
     <a class="btn" href="https://github.com/indecenti/marea/blob/main/docs/MANUAL.md">User manual</a>
   </div>
-  <p class="meta">MIT license · Windows 10 1809+ and 11 · English, Italiano, Español, Français, Deutsch, Português · pre-release</p>
+  <p class="meta">MIT license · Windows 10 1809+ and 11 · English, Italiano, Español, Français, Deutsch, Português, 简体中文 · pre-release</p>
   <div class="shot">
     <picture>
       <source media="(prefers-color-scheme: dark)" srcset="images/tour-dark.gif">
@@ -228,6 +228,8 @@ $env:MAREA_READONLY = "1"; mareactl models --json  # inventory, no changes possi
     <a href="https://github.com/indecenti/marea/blob/main/docs/i18n/README.es.md" hreflang="es">Español</a>
     <a href="https://github.com/indecenti/marea/blob/main/docs/i18n/README.fr.md" hreflang="fr">Français</a>
     <a href="https://github.com/indecenti/marea/blob/main/docs/i18n/README.de.md" hreflang="de">Deutsch</a>
+    <a href="https://github.com/indecenti/marea/blob/main/docs/i18n/README.pt.md" hreflang="pt">Português</a>
+    <a href="https://github.com/indecenti/marea/blob/main/docs/i18n/README.zh.md" hreflang="zh-Hans">简体中文</a>
   </p>
   <p>Marea is free software under the MIT license · <a href="https://github.com/indecenti/marea">GitHub</a> · <a href="https://github.com/indecenti/marea/blob/main/CHANGELOG.md">Changelog</a> · <a href="llms.txt">llms.txt</a></p>
 </footer>
