@@ -66,7 +66,7 @@ intentan salir de su sandbox) o *Peligroso*. Para revisar un modelo recién desc
 
 ## Novedades de la 0.8
 
-Marea libera espacio también en **Linux** (x64 y ARM64), con `mareactl`. Se instala el servicio una vez con `sudo mareactl service install`; después `add`, `scan` y `free` funcionan como en Windows. Un archivo liberado sigue en su sitio con el mismo tamaño y vuelve, verificado, en cuanto un programa lo abre. Los archivos que tiene abiertos un servidor de modelos en marcha nunca se tocan.
+Marea libera espacio también en **Linux** (x64 y ARM64), con `mareactl`. Se instala el servicio una vez con `sudo mareactl service install`; después `add`, `scan` y `free` funcionan como en Windows. Un archivo liberado sigue en su sitio con el mismo tamaño y vuelve, verificado, en cuanto un programa lo abre. Los archivos que tiene abiertos un servidor de modelos en marcha nunca se tocan. Probado con Hugging Face (`huggingface_hub` 2.5) y con Ollama, también en la GPU.
 
 ## Novedades de la 0.7
 

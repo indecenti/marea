@@ -28,4 +28,4 @@ real Windows cloud filter driver on temporary folders and clean up after themsel
 
 - A new source resolver (Ollama registry by digest, Civitai by hash, PyPI wheels from `uv.lock`).
 - Translations into more languages.
-- macOS (File Provider) or Linux (fanotify pre-content / FUSE) placeholder backends.
+- A macOS (File Provider) placeholder backend, following the Linux one in `src/Marea.Core/Platform/Linux`.

@@ -62,7 +62,8 @@ Feedback that helps most:
 - Evaporated files only open while Marea is running (like OneDrive "online-only" files).
 - Opening an evaporated file for reading brings the **whole** file back, including when an
   antivirus scans it on open.
-- Windows only. macOS and Linux are on the roadmap.
+- This guide covers the Windows app. On Linux there is `mareactl` with a systemd agent (see the
+  README, *On Linux*); `build/linux-selftest.sh` tests it end to end. macOS is on the roadmap.
 
 ## When you're done
 

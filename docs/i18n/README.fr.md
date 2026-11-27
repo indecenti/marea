@@ -66,7 +66,7 @@ vérifier un modèle tout juste téléchargé : `mareactl check <fichier ou doss
 
 ## Nouveautés de la 0.8
 
-Marea libère aussi de l'espace sous **Linux** (x64 et ARM64), avec `mareactl`. On installe le service une fois avec `sudo mareactl service install` ; ensuite `add`, `scan` et `free` fonctionnent comme sous Windows. Un fichier libéré reste à sa place avec la même taille et revient, vérifié, dès qu'un programme l'ouvre. Les fichiers ouverts par un serveur de modèles en marche ne sont jamais touchés.
+Marea libère aussi de l'espace sous **Linux** (x64 et ARM64), avec `mareactl`. On installe le service une fois avec `sudo mareactl service install` ; ensuite `add`, `scan` et `free` fonctionnent comme sous Windows. Un fichier libéré reste à sa place avec la même taille et revient, vérifié, dès qu'un programme l'ouvre. Les fichiers ouverts par un serveur de modèles en marche ne sont jamais touchés. Testé avec Hugging Face (`huggingface_hub` 2.5) et avec Ollama, y compris sur GPU.
 
 ## Nouveautés de la 0.7
 

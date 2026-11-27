@@ -68,7 +68,7 @@ uscire dalla sandbox) o *Pericoloso*. Per controllare un modello appena scaricat
 
 ## Novità della 0.8
 
-Marea libera spazio anche su **Linux** (x64 e ARM64), con `mareactl`. Si installa una volta il servizio con `sudo mareactl service install`; poi `add`, `scan` e `free` funzionano come su Windows. Un file liberato resta al suo posto con la stessa dimensione e torna, verificato, appena un programma lo apre. I file aperti da un server di modelli in funzione non vengono mai toccati.
+Marea libera spazio anche su **Linux** (x64 e ARM64), con `mareactl`. Si installa una volta il servizio con `sudo mareactl service install`; poi `add`, `scan` e `free` funzionano come su Windows. Un file liberato resta al suo posto con la stessa dimensione e torna, verificato, appena un programma lo apre. I file aperti da un server di modelli in funzione non vengono mai toccati. Provato con Hugging Face (`huggingface_hub` 2.5) e con Ollama, anche sulla scheda video.
 
 ## Novità della 0.7
 
@@ -204,8 +204,9 @@ NAS tornano anche offline.
 **Cosa invia in rete?** Solo i nomi dei repository pubblici impostati e le richieste dei file
 pubblici. Mai percorsi, nomi di file o impronte dei tuoi file.
 
-**macOS / Linux?** Il motore è .NET portabile. Serve un nuovo strato segnaposto: File Provider
-su macOS, fanotify o FUSE su Linux. Contributi benvenuti.
+**macOS / Linux?** Linux sì, dalla 0.8: `mareactl` con un servizio di sistema (vedi *Novità
+della 0.8*). Su macOS gira il controllo di sicurezza (`marea-check`); per liberare spazio serve
+un'estensione File Provider firmata da Apple. Contributi benvenuti.
 
 ## Contribuire
 

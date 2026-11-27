@@ -66,7 +66,7 @@ aus ihrer Sandbox ausbrechen wollen) oder *Gefährlich*. Ein gerade geladenes Mo
 
 ## Neu in 0.8
 
-Marea gibt jetzt auch unter **Linux** (x64 und ARM64) Speicher frei, mit `mareactl`. Den Dienst einmal mit `sudo mareactl service install` installieren; danach funktionieren `add`, `scan` und `free` wie unter Windows. Eine freigegebene Datei bleibt mit derselben Größe an ihrem Platz und kommt geprüft zurück, sobald ein Programm sie öffnet. Dateien, die ein laufender Modellserver geöffnet hat, werden nie angefasst.
+Marea gibt jetzt auch unter **Linux** (x64 und ARM64) Speicher frei, mit `mareactl`. Den Dienst einmal mit `sudo mareactl service install` installieren; danach funktionieren `add`, `scan` und `free` wie unter Windows. Eine freigegebene Datei bleibt mit derselben Größe an ihrem Platz und kommt geprüft zurück, sobald ein Programm sie öffnet. Dateien, die ein laufender Modellserver geöffnet hat, werden nie angefasst. Getestet mit Hugging Face (`huggingface_hub` 2.5) und mit Ollama, auch auf der GPU.
 
 ## Neu in 0.7
 
