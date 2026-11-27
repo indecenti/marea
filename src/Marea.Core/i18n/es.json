@@ -76,6 +76,7 @@
  "ev.changed": "el archivo cambió desde su última huella: vuelve a escanear",
  "ev.hardlinks": "el archivo tiene otros enlaces duros",
  "ev.in_use": "el archivo lo está usando otro programa",
+ "ev.no_permission": "no tienes permiso para modificar este archivo",
  "ev.no_source_alive": "ninguna fuente responde en este momento",
  "ev.platform_refused": "el sistema se negó: {0}",
  "ev.public_changed": "el archivo público ya no coincide",

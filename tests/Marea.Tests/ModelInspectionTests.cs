@@ -171,6 +171,27 @@ public sealed class ModelInspectionTests : IDisposable
     }
 
     [Fact]
+    public void SharedHubBlobsAreNamedAfterTheRepoThatUsesThem()
+    {
+        // huggingface_hub 2.x: bytes once in hub/blobs/<xx>/<hash>, repos listed in "<hash>.refs".
+        var hub = Path.Combine(Path.GetTempPath(), "hub");
+        var shared = Path.Combine(hub, "blobs", "78", "789fdf");
+        var files = new[]
+        {
+            new FileRecord { Path = shared, Root = hub, Size = 90, Sha256 = "s" },
+            new FileRecord { Path = Path.Combine(hub, "blobs", "12", "nolist"), Root = hub, Size = 5, Sha256 = "n" },
+        };
+        string? Read(string p) => p == shared + ".refs"
+            ? "models--sentence-transformers--all-MiniLM-L6-v2/blobs/53aa51\nmodels--other--repo/blobs/53aa51\n"
+            : null;
+        var models = ModelCatalog.Build(files, new Dictionary<string, ModelMeta>(), (_, _) => false, readText: Read);
+        var m = models.Single(x => x.Kind == ModelKind.HuggingFace);
+        Assert.Equal("sentence-transformers/all-MiniLM-L6-v2", m.Name);
+        Assert.Equal(Path.Combine(hub, "models--sentence-transformers--all-MiniLM-L6-v2"), m.Folder);
+        Assert.Contains(models, x => x.Kind == ModelKind.File && x.Name == "nolist");
+    }
+
+    [Fact]
     public void GenericFileNamesTakeTheFolderName()
     {
         const string root = @"C:\m";

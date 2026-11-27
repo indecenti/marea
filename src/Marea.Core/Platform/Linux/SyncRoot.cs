@@ -61,7 +61,7 @@ public static class SyncRoot
             LinuxNative.SetXattr(fd, Placeholder.IdAttr, block.AsSpan(0, 32));
             return LinuxNative.PunchHole(fd, block.Length) == 0 ? null : Loc.T("linux.fs_unsupported");
         }
-        catch (IOException)
+        catch (Exception e) when (e is IOException or CloudFilesException)
         {
             return Loc.T("linux.fs_unsupported");
         }

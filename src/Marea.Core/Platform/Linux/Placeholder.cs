@@ -39,6 +39,9 @@ public static class Placeholder
         var before = LinuxNative.Stat(fd);
         var path = LinuxNative.FdPath(fd);
         using var lease = WriteLease.Take(fd);
+        // Setting an attribute needs write permission at that moment: a read-only file (huggingface_hub
+        // 2.x shared blobs are 0444) gets the owner write bit for the operation and its mode back after.
+        using var writable = WritableWhile.Lift(fd, before);
         LinuxNative.SetXattr(fd, IdAttr, identity);
         try
         {
@@ -138,6 +141,37 @@ public static class Placeholder
 
     /// <summary>Bytes the file really occupies on disk.</summary>
     public static long SizeOnDisk(string path) => LinuxNative.LStat(path).Blocks * 512;
+}
+
+/// <summary>Gives a read-only file its owner write bit until disposed, then restores the exact mode.</summary>
+internal sealed class WritableWhile : IDisposable
+{
+    private readonly int _fd;
+    private readonly uint _mode;
+
+    private WritableWhile(int fd, uint mode)
+    {
+        _fd = fd;
+        _mode = mode;
+    }
+
+    /// <summary>Lifts the bit when missing; returns null when the file is already writable by its owner.</summary>
+    public static WritableWhile? Lift(int fd, LinuxStat st)
+    {
+        var mode = (uint)st.Mode & 0xFFF;
+        if ((mode & 0x80) != 0)
+        {
+            return null;
+        }
+        if (LinuxNative.fchmod(fd, mode | 0x80) != 0)
+        {
+            throw new UnauthorizedAccessException($"chmod: {LinuxNative.ErrText(LinuxNative.Errno)}");
+        }
+        return new WritableWhile(fd, mode);
+    }
+
+    /// <summary>Puts the original mode back.</summary>
+    public void Dispose() => LinuxNative.fchmod(_fd, _mode);
 }
 
 /// <summary>A kernel write lease: granted only when no other descriptor or memory mapping of the file exists,

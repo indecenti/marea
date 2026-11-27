@@ -6,6 +6,17 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.8.1] - 2026-11-27
+
+### Fixed
+- **huggingface_hub 2.x cache.** The library now keeps each file once in `hub/blobs/<xx>/<hash>`,
+  read-only, and lists the repos using it in a `.refs` file next to it. Those files are now named
+  after their repo (`sentence-transformers/all-MiniLM-L6-v2`) instead of a hash, on Windows and Linux.
+- Linux: read-only files (like those shared blobs) can be freed; their mode is kept. Tested end to
+  end on a real Hugging Face cache: freed, loaded with `hf_hub_download` and `safetensors`, refilled
+  from huggingface.co and verified, also with `HF_HUB_OFFLINE=1`.
+- A file Marea has no permission to change is reported as such, not as "in use".
+
 ## [0.8.0] - 2026-11-27
 
 ### Added

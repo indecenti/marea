@@ -76,6 +76,7 @@
  "ev.changed": "the file changed since its last fingerprint: scan again",
  "ev.hardlinks": "the file has other hard links",
  "ev.in_use": "the file is in use by another program",
+ "ev.no_permission": "you do not have permission to change this file",
  "ev.no_source_alive": "no source answers right now",
  "ev.platform_refused": "the system refused: {0}",
  "ev.public_changed": "the public file no longer matches",

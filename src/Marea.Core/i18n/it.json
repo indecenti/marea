@@ -76,6 +76,7 @@
  "ev.changed": "il file è cambiato dall'ultima impronta: va scansionato di nuovo",
  "ev.hardlinks": "il file ha altri collegamenti (hardlink)",
  "ev.in_use": "il file è in uso da un altro programma",
+ "ev.no_permission": "non hai il permesso di modificare questo file",
  "ev.no_source_alive": "nessuna fonte risponde in questo momento",
  "ev.platform_refused": "il sistema ha rifiutato: {0}",
  "ev.public_changed": "il file pubblico non corrisponde più",

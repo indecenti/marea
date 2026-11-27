@@ -82,7 +82,7 @@ internal static unsafe class LinuxNative
         {
             if (fsetxattr(fd, name, p, value.Length, 0) != 0)
             {
-                throw new IOException($"setxattr: {ErrText(Errno)}");
+                throw new CloudFilesException($"setxattr: {ErrText(Errno)}", Errno);
             }
         }
     }
@@ -94,7 +94,7 @@ internal static unsafe class LinuxNative
         {
             if (lsetxattr(path, name, p, value.Length, 0) != 0)
             {
-                throw new IOException($"setxattr {path}: {ErrText(Errno)}");
+                throw new CloudFilesException($"setxattr {path}: {ErrText(Errno)}", Errno);
             }
         }
     }
@@ -167,6 +167,8 @@ internal static unsafe class LinuxNative
     private static extern nint signal(int sig, nint handler);
     [DllImport(Libc, SetLastError = true)]
     public static extern int close(int fd);
+    [DllImport(Libc, SetLastError = true)]
+    public static extern int fchmod(int fd, uint mode);
     [DllImport(Libc)]
     public static extern uint geteuid();
 

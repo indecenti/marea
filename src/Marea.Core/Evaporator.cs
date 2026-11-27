@@ -47,11 +47,15 @@ public sealed class Evaporator(Ledger ledger, MareaSettings settings, HuggingFac
         SafeFileHandle h;
         try
         {
-            h = File.OpenHandle(f.Path, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+            h = OperatingSystem.IsWindows() ? OpenExclusive(f.Path) : OpenExclusiveUnix(f.Path);
         }
-        catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+        catch (IOException)
         {
             return Keep(f, "ev.in_use");
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Keep(f, "ev.no_permission");
         }
         using (h)
         {
@@ -140,6 +144,38 @@ public sealed class Evaporator(Ledger ledger, MareaSettings settings, HuggingFac
             }
         }
         return false;
+    }
+
+    private static SafeFileHandle OpenExclusive(string path) =>
+        File.OpenHandle(path, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+
+    /// <summary>huggingface_hub 2.x makes its shared blobs read-only (0444). Unix checks permissions only
+    /// when a file is opened, so for a file the user owns the write bit is lifted for the open alone and
+    /// the original mode is put back at once. A file of another user still fails (no permission).</summary>
+    [System.Runtime.Versioning.UnsupportedOSPlatform("windows")]
+    private static SafeFileHandle OpenExclusiveUnix(string path)
+    {
+        try
+        {
+            return OpenExclusive(path);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            var mode = File.GetUnixFileMode(path);
+            if (mode.HasFlag(UnixFileMode.UserWrite))
+            {
+                throw;
+            }
+            File.SetUnixFileMode(path, mode | UnixFileMode.UserWrite);
+            try
+            {
+                return OpenExclusive(path);
+            }
+            finally
+            {
+                File.SetUnixFileMode(path, mode);
+            }
+        }
     }
 
     /// <summary>True when a tracked file still has the size and write time it had when hashed.</summary>

@@ -76,6 +76,7 @@
  "ev.changed": "die Datei hat sich seit dem letzten Fingerabdruck geändert: erneut scannen",
  "ev.hardlinks": "die Datei hat weitere Hardlinks",
  "ev.in_use": "die Datei wird von einem anderen Programm verwendet",
+ "ev.no_permission": "du hast keine Berechtigung, diese Datei zu ändern",
  "ev.no_source_alive": "gerade antwortet keine Quelle",
  "ev.platform_refused": "das System hat abgelehnt: {0}",
  "ev.public_changed": "die öffentliche Datei stimmt nicht mehr überein",

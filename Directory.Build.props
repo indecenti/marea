@@ -9,7 +9,7 @@
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <Company>Marea</Company>
     <Product>Marea</Product>
-    <Version>0.8.0</Version>
+    <Version>0.8.1</Version>
     <InvariantGlobalization>false</InvariantGlobalization>
     <!-- Supply-chain safety: the build fails if any dependency (direct or transitive) has a known vulnerability. -->
     <NuGetAudit>true</NuGetAudit>

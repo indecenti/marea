@@ -76,6 +76,7 @@
  "ev.changed": "le fichier a changé depuis sa dernière empreinte : relancez l'analyse",
  "ev.hardlinks": "le fichier a d'autres liens physiques",
  "ev.in_use": "le fichier est utilisé par un autre programme",
+ "ev.no_permission": "vous n'avez pas le droit de modifier ce fichier",
  "ev.no_source_alive": "aucune source ne répond en ce moment",
  "ev.platform_refused": "le système a refusé : {0}",
  "ev.public_changed": "le fichier public ne correspond plus",

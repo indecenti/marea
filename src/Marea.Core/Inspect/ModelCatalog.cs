@@ -100,6 +100,36 @@ public static partial class ModelCatalog
     [GeneratedRegex(@"[\\/]models--([^\\/]+?)--([^\\/]+)[\\/]", RegexOptions.IgnoreCase)]
     private static partial Regex HfCache();
 
+    /// <summary>huggingface_hub 2.x keeps the bytes once in hub/blobs/&lt;xx&gt;/&lt;hash&gt; and lists the repos
+    /// that use them in a sibling ".refs" file (models--org--name/blobs/&lt;sha&gt; per line). Returns the
+    /// first repo blob path, or null for any other file.</summary>
+    private static string? SharedBlobOwner(string path, Func<string, string?> read)
+    {
+        var shard = Path.GetDirectoryName(path);
+        var blobs = shard is null ? null : Path.GetDirectoryName(shard);
+        var hub = blobs is null ? null : Path.GetDirectoryName(blobs);
+        if (hub is null || !string.Equals(Path.GetFileName(blobs), "blobs", StringComparison.OrdinalIgnoreCase))
+        {
+            return null;
+        }
+        var first = read(path + ".refs")?.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .FirstOrDefault(l => l.StartsWith("models--", StringComparison.Ordinal));
+        return first is null ? null : Path.Combine(hub, first.Replace('/', Path.DirectorySeparatorChar));
+    }
+
+    private static string? ReadSmallText(string path)
+    {
+        try
+        {
+            var fi = new FileInfo(path);
+            return fi.Exists && fi.Length < 64 * 1024 ? File.ReadAllText(path) : null;
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+        {
+            return null;
+        }
+    }
+
     [GeneratedRegex(@"^(.*?)[-_.]?\d{5}-of-\d{5}", RegexOptions.IgnoreCase)]
     private static partial Regex Shard();
 
@@ -107,11 +137,14 @@ public static partial class ModelCatalog
     [GeneratedRegex(@"^(model|pytorch_model|diffusion_pytorch_model|consolidated|weights|adapter_model|ggml-model|unet|vae)([-_.].*)?$", RegexOptions.IgnoreCase)]
     private static partial Regex Generic();
 
-    /// <summary>Builds the model list. <paramref name="folderHasFile"/> is injectable for tests.</summary>
+    /// <summary>Builds the model list. <paramref name="folderHasFile"/> and <paramref name="readText"/>
+    /// (contents of a small file, or null) are injectable for tests.</summary>
     public static List<ModelEntry> Build(IEnumerable<FileRecord> files, IReadOnlyDictionary<string, ModelMeta> meta,
-        Func<string, string, bool>? folderHasFile = null, IReadOnlyDictionary<string, string>? hubScans = null)
+        Func<string, string, bool>? folderHasFile = null, IReadOnlyDictionary<string, string>? hubScans = null,
+        Func<string, string?>? readText = null)
     {
         folderHasFile ??= (dir, name) => File.Exists(Path.Combine(dir, name));
+        readText ??= ReadSmallText;
         var ollama = new Dictionary<string, Dictionary<string, List<string>>>(StringComparer.OrdinalIgnoreCase);
         var layouts = new Dictionary<string, OllamaLayout>(StringComparer.OrdinalIgnoreCase);
         IReadOnlySet<string> Rollback(string modelsDir) =>
@@ -119,7 +152,7 @@ public static partial class ModelCatalog
         var groups = new Dictionary<string, (string Name, ModelKind Kind, string Folder, List<FileRecord> Files)>(StringComparer.OrdinalIgnoreCase);
         foreach (var f in files)
         {
-            var (key, name, kind, folder) = Classify(f, folderHasFile, ollama);
+            var (key, name, kind, folder) = Classify(f, folderHasFile, readText, ollama);
             if (!groups.TryGetValue(key, out var g))
             {
                 groups[key] = g = (name, kind, folder, []);
@@ -153,13 +186,15 @@ public static partial class ModelCatalog
     }
 
     private static (string Key, string Name, ModelKind Kind, string Folder) Classify(FileRecord f,
-        Func<string, string, bool> has, Dictionary<string, Dictionary<string, List<string>>> ollama)
+        Func<string, string, bool> has, Func<string, string?> read, Dictionary<string, Dictionary<string, List<string>>> ollama)
     {
         var dir = Path.GetDirectoryName(f.Path) ?? f.Root;
-        if (HfCache().Match(f.Path) is { Success: true } hf)
+        // A shared blob (huggingface_hub 2.x) is named after the repo that uses it.
+        var hubPath = SharedBlobOwner(f.Path, read) ?? f.Path;
+        if (HfCache().Match(hubPath) is { Success: true } hf)
         {
             var repo = $"{hf.Groups[1].Value}/{hf.Groups[2].Value}";
-            var repoDir = f.Path[..(hf.Index + hf.Length - 1)];
+            var repoDir = hubPath[..(hf.Index + hf.Length - 1)];
             return ("hf:" + repo, repo, ModelKind.HuggingFace, repoDir);
         }
         var fileName = Path.GetFileName(f.Path);

@@ -29,6 +29,7 @@ EOF
 SHA_A=$(sha256sum "$H/models/model-a.gguf" | cut -c1-64)
 SHA_B=$(sha256sum "$H/models/sub/model-b.safetensors" | cut -c1-64)
 touch -d '30 days ago' "$H/models/model-a.gguf" "$H/models/sub/model-b.safetensors"
+chmod 444 "$H/models/sub/model-b.safetensors"   # read-only, like huggingface_hub 2.x shared blobs
 MT_A=$(stat -c %y "$H/models/model-a.gguf")
 
 echo "== add, settings, scan, replicate to the mirror"
@@ -78,6 +79,7 @@ for f in model-a.gguf sub/model-b.safetensors; do
   stat -c "  %n: size %s, on disk %b blocks, mtime %y" "$H/models/$f"
 done
 [ "$(stat -c %b "$H/models/model-a.gguf")" -le 16 ] && ok "blocks released" || ko "blocks still allocated"
+[ "$(stat -c %a "$H/models/sub/model-b.safetensors")" = 444 ] && ok "read-only file freed, mode kept" || ko "read-only file: mode $(stat -c %a "$H/models/sub/model-b.safetensors")"
 [ "$(stat -c %s "$H/models/model-a.gguf")" = $((300<<20)) ] && ok "size kept" || ko "size changed"
 [ "$(stat -c %y "$H/models/model-a.gguf")" = "$MT_A" ] && ok "write time kept" || ko "write time changed"
 AS_USER "$CTL" status 2>/dev/null | head -5
@@ -96,7 +98,7 @@ echo "== two programs open model-b at the same time"
 (sha256sum "$H/models/sub/model-b.safetensors" > "$H/r1") & R1=$!
 (AS_USER sha256sum "$H/models/sub/model-b.safetensors" > "$H/r2") & R2=$!
 wait $R1 $R2
-[ "$(cut -c1-64 "$H/r1")" = "$SHA_B" ] && [ "$(cut -c1-64 "$H/r2")" = "$SHA_B" ] && ok "both readers got the right bytes" || ko "concurrent readers: $(cat "$H/r1" "$H/r2")"
+[ "$(cut -c1-64 "$H/r1")" = "$SHA_B" ] && [ "$(cut -c1-64 "$H/r2")" = "$SHA_B" ] && ok "both readers got the right bytes (read-only file)" || ko "concurrent readers: $(cat "$H/r1" "$H/r2")"
 
 echo "== the source is corrupted: the open must fail, the file stay freed"
 sleep 3
